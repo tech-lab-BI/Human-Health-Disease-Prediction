@@ -1,0 +1,31 @@
+Human-Health-Disease-Prediction/
+│
+├── 📁 static/                  # Frontend static files
+│   ├── app.js                  # Main Javascript logic (UI interactions, API calls, voice input)
+│   └── style.css               # Application styling and modern UI design rules
+│
+├── 📁 templates/               # HTML templates
+│   └── index.html              # The main user interface page (login, wizard, results)
+│
+├── 📁 models/                  # Saved Machine Learning models
+│   ├── rf_disease_model.pkl    # Trained Random Forest classifier for disease prediction
+│   └── tfidf_vectorizer.pkl    # Text tokenizer to process symptoms
+│
+├── 📁 datasets/                # (Your data folder - Note: you mentioned this earlier)
+│   ├── Training.csv            # Original historical patient data used to train the ML
+│   └── Testing.csv             # Test data for ML accuracy validation
+│
+├── app.py                      # Main Flask Backend Server (routing & API endpoints)
+├── agents.py                   # Gemini AI Prompts (Diagnosis, Recommendations & Summaries)
+├── integrations.py             # Third-party APIs (ElevenLabs, Snowflake, DigitalOcean, Solana)
+├── ml_engine.py                # Handles running the ML predictions on user symptoms
+├── model_trainer.py            # Script to train/re-train the ML models from the CSV
+├── recommendations.py          # Local fallback data mapping diseases to medicines & advice
+├── pdf_generator.py            # Logic to generate the downloadable PDF reports
+├── config.py                   # App configuration and Gemini setup parameters
+├── constants.py                # Constants like body areas and mapped symptom keywords
+├── seed_db.py                  # Script we wrote to bulk-upload real CSV data into Snowflake
+│
+├── .env                        # Secret API keys & credentials (Not pushed to GitHub)
+├── .gitignore                  # Tells Git which files to ignore (like .env or pycache)
+└── README.md                   # Project documentation
