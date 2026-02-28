@@ -828,6 +828,7 @@ body::before {
 .analyzing-step-icon {
     width: 20px;
     text-align: center;
+    padding-bottom: 40px;
 }
 
 /* ---- Results Screen ---- */
