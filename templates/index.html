@@ -1,33 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Health Checkup</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthAI — AI Health Checkup</title>
+    <meta name="description"
+        content="AI-powered health checkup with multi-agent disease prediction, symptom analysis, and treatment recommendations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h1>HealthAI</h1>
+                    <span class="header-subtitle">Multi-Agent Health Checkup</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="ai-status" id="ai-status">
+                    <span class="status-dot" id="status-dot"></span>
+                    <span class="status-text" id="status-text">Checking...</span>
+                </div>
+                {% if user %}
+                <div class="user-badge">
+                    <span class="user-avatar">{{ user.get('name', user.get('email', '?'))[0] | upper }}</span>
+                    <a href="/logout" class="logout-btn" title="Logout">Logout</a>
+                </div>
+                {% endif %}
+            </div>
+        </header>
 
-<h1 class="title">HEALTH CHECKUP</h1>
+        <!-- Agent Status Bar -->
+        <div class="agent-bar" id="agent-bar">
+            <div class="agent-chip active" data-agent="intake">
+                <span class="agent-dot"></span>
+                <span>🩺 Intake</span>
+            </div>
+            <div class="agent-chip" data-agent="diagnosis">
+                <span class="agent-dot"></span>
+                <span>🔬 Diagnosis</span>
+            </div>
+            <div class="agent-chip" data-agent="recommendation">
+                <span class="agent-dot"></span>
+                <span>💊 Treatment</span>
+            </div>
+            <div class="agent-chip" data-agent="summary">
+                <span class="agent-dot"></span>
+                <span>📋 Report</span>
+            </div>
+        </div>
 
-<div class="container">
+        <!-- Main Content -->
+        <main class="main-content" id="main-content">
 
-    <div class="tabs">
-        <button class="active">Symptom Checker</button>
-        <a href="/doctor"><button>Find My Doctor</button></a>
+            {% if not user %}
+            <!-- LOGIN SCREEN -->
+            <div class="login-screen" id="login-screen">
+                <div class="login-card">
+                    <div class="login-icon">🏥</div>
+                    <h2>Welcome to HealthAI</h2>
+                    <p>AI-powered health checkup with multi-agent disease prediction, treatment recommendations, and
+                        downloadable health reports.</p>
+                    <div class="login-features">
+                        <div class="login-feature"><span>🩺</span> 132 Symptom Analysis</div>
+                        <div class="login-feature"><span>🧠</span> ML + AI Diagnosis</div>
+                        <div class="login-feature"><span>💊</span> Treatment Plans</div>
+                        <div class="login-feature"><span>📄</span> PDF Reports</div>
+                    </div>
+                    <a href="/login" class="login-btn" id="login-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                        </svg>
+                        Sign In to Start Checkup
+                    </a>
+                    <p class="login-note">Secure authentication powered by Auth0</p>
+                </div>
+            </div>
+            {% else %}
+
+            <!-- STEP WIZARD -->
+            <div class="wizard" id="wizard">
+                <!-- Progress Bar -->
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 10%"></div>
+                    <div class="progress-steps" id="progress-steps"></div>
+                </div>
+
+                <!-- Step Container -->
+                <div class="step-container" id="step-container">
+                    <!-- Steps will be rendered by JS -->
+                </div>
+
+                <!-- Navigation -->
+                <div class="step-nav">
+                    <button class="nav-btn btn-back" id="btn-back" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                        Back
+                    </button>
+                    <div class="step-indicator" id="step-indicator">Step 1 of 9</div>
+                    <button class="nav-btn btn-next" id="btn-next">
+                        Next
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTS -->
+            <div class="results-screen hidden" id="results-screen">
+                <div class="results-header">
+                    <h2>🩺 Your Health Assessment Report</h2>
+                    <div class="results-actions">
+                        <button class="download-btn" id="download-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Download PDF
+                        </button>
+                        <button class="new-checkup-btn" id="new-checkup-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                            </svg>
+                            New Checkup
+                        </button>
+                    </div>
+                </div>
+                <div class="report-content" id="report-content"></div>
+                <p class="input-disclaimer">HealthAI provides AI-generated health insights. Always consult a qualified
+                    doctor for medical advice.</p>
+            </div>
+
+            {% endif %}
+        </main>
     </div>
 
-    <form action="/predict" method="POST" class="form-box">
-        <h2>Disease Checker</h2>
-
-        <input type="text" name="symptom1" placeholder="Symptom 1" required>
-        <input type="text" name="symptom2" placeholder="Symptom 2" required>
-        <input type="text" name="symptom3" placeholder="Symptom 3" required>
-        <input type="text" name="symptom4" placeholder="Symptom 4" required>
-        <input type="text" name="symptom5" placeholder="Symptom 5" required>
-
-        <button type="submit">Check</button>
-    </form>
-
-</div>
-
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
+
 </html>
