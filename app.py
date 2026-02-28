@@ -271,7 +271,9 @@ def analyze():
     session.modified = True
 
     # Store anonymized data for analytics and user records (Snowflake or local)
-    user_email = session.get("user", {}).get("email")
+    user_obj = session.get("user", {})
+    user_email = user_obj.get("email") or user_obj.get("name") 
+    print(f"DEBUG SAVE RECORD: user_obj={user_obj}, user_email={user_email}")
     store_health_data(patient_data, diagnosis, user_email)
 
     sources = []
@@ -342,7 +344,9 @@ def api_health_stats():
 @login_required
 def api_my_records():
     """Get past health checkup records for the logged-in user."""
-    user_email = session.get("user", {}).get("email")
+    user_obj = session.get("user", {})
+    user_email = user_obj.get("email") or user_obj.get("name")
+    print(f"DEBUG FETCH RECORDS: user_obj={user_obj}, user_email={user_email}")
     if not user_email:
         return jsonify({"error": "User email not found"}), 400
     
