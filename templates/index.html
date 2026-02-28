@@ -1,33 +1,57 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Health Checkup</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
+
 <body>
 
-<h1 class="title">HEALTH CHECKUP</h1>
+    <h1 class="title">HEALTH CHECKUP</h1>
+    <p class="subtitle">AI-Powered Disease Prediction & Doctor Consultation</p>
 
-<div class="container">
+    <div class="container">
 
-    <div class="tabs">
-        <button class="active">Symptom Checker</button>
-        <a href="/doctor"><button>Find My Doctor</button></a>
+        <!-- Auth Header -->
+        <div class="auth-header">
+            {% if session and session.get('user') %}
+            <span class="welcome-text">👋 Welcome, {{ session.get('user').get('userinfo').get('name') }}!</span>
+            <a href="/logout"><button class="btn-small btn-danger">Logout</button></a>
+            {% else %}
+            <a href="/login"><button class="btn-small btn-primary">Login / Sign Up</button></a>
+            {% endif %}
+        </div>
+
+        <div class="tabs">
+            <button class="active">Symptom Checker</button>
+            <a href="/doctor"><button>Find My Doctor</button></a>
+        </div>
+
+        <form action="/predict" method="POST" class="form-box">
+            <h2>Disease Checker</h2>
+
+            {% if session and session.get('user') %}
+            <p class="tier-badge tier-premium">🌟 Premium — Enter up to 5 symptoms</p>
+            <input type="text" name="symptom1" placeholder="Symptom 1" required>
+            <input type="text" name="symptom2" placeholder="Symptom 2" required>
+            <input type="text" name="symptom3" placeholder="Symptom 3">
+            <input type="text" name="symptom4" placeholder="Symptom 4">
+            <input type="text" name="symptom5" placeholder="Symptom 5">
+            {% else %}
+            <p class="tier-badge tier-free">🔓 Guest — Enter 2 symptoms (<a href="/login">Login</a> for 5)</p>
+            <input type="text" name="symptom1" placeholder="Symptom 1" required>
+            <input type="text" name="symptom2" placeholder="Symptom 2" required>
+            <input type="text" name="symptom3" value="" hidden>
+            <input type="text" name="symptom4" value="" hidden>
+            <input type="text" name="symptom5" value="" hidden>
+            {% endif %}
+
+            <button type="submit" class="btn-primary">Check Now</button>
+        </form>
+
     </div>
 
-    <form action="/predict" method="POST" class="form-box">
-        <h2>Disease Checker</h2>
-
-        <input type="text" name="symptom1" placeholder="Symptom 1" required>
-        <input type="text" name="symptom2" placeholder="Symptom 2" required>
-        <input type="text" name="symptom3" placeholder="Symptom 3" required>
-        <input type="text" name="symptom4" placeholder="Symptom 4" required>
-        <!-- <input type="text" name="symptom5" placeholder="Symptom 5" required> -->
-
-        <button type="submit">Check</button>
-    </form>
-
-</div>
-
 </body>
+
 </html>

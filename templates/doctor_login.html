@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Doctor Login - Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+    <h1 class="title">HEALTH CHECKUP</h1>
+    <p class="subtitle">Doctor Portal</p>
+
+    <div class="container">
+        <div class="form-box doctor-login-box">
+            <h2>🩺 Doctor Login</h2>
+
+            {% if error %}
+            <div class="error-msg">{{ error }}</div>
+            {% endif %}
+
+            <form action="/doctor-login" method="POST">
+                <input type="email" name="email" placeholder="Doctor Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn-primary">Login to Dashboard</button>
+            </form>
+
+            <p class="muted-text">Not a doctor? <a href="/">Go to Patient Portal</a></p>
+        </div>
+    </div>
+
+</body>
+
+</html>

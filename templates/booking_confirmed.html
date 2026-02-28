@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Booking Confirmed - Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+    <h1 class="title">HEALTH CHECKUP</h1>
+
+    <div class="container">
+        <div class="confirmation-box">
+            <div class="confirmation-icon">✅</div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your consultation has been successfully booked.</p>
+
+            <div class="confirmation-details">
+                <div class="payment-row">
+                    <span>Doctor</span>
+                    <strong>{{ doctor.name }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Specialization</span>
+                    <strong>{{ doctor.specialization }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Disease</span>
+                    <strong>{{ disease }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Amount Paid</span>
+                    <strong>₹{{ doctor.fee + 49 }}</strong>
+                </div>
+            </div>
+
+            <p class="muted-text">The doctor will review your symptoms and get back to you shortly.</p>
+
+            <div class="confirmation-actions">
+                <a href="/"><button class="btn-primary">Back to Home</button></a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
