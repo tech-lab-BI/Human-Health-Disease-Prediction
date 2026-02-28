@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Result</title>
+    <title>Prediction Result</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
 
-<div class="result-box">
-    <h2>There are chances you may have</h2>
-    <h1>{{ disease }}</h1>
-    <a href="/">Go Back</a>
+<h1 class="title">Prediction Result</h1>
+
+<div class="container">
+    <div class="form-box">
+        <h2>Predicted Disease:</h2>
+        <h3 style="color:red;">{{ prediction }}</h3>
+
+        <br>
+        <a href="/"><button>Go Back</button></a>
+    </div>
 </div>
 
 </body>

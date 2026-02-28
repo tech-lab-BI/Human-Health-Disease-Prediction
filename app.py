@@ -1,43 +1,31 @@
 from flask import Flask, render_template, request
-import pickle
-import pandas as pd
+from diseaseprediction import DiseasePrediction
 
 app = Flask(__name__)
+model = DiseasePrediction()
 
-# Load trained model (if you have .pkl file)
-try:
-    model = pickle.load(open("model.pkl", "rb"))
-except:
-    model = None
-
-# Home Page
-@app.route('/')
+@app.route("/")
 def home():
     return render_template("index.html")
 
-# Disease Prediction
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
+
     symptoms = [
-        request.form['symptom1'],
-        request.form['symptom2'],
-        request.form['symptom3'],
-        request.form['symptom4'],
-        request.form['symptom5']
+        request.form.get("symptom1"),
+        request.form.get("symptom2"),
+        request.form.get("symptom3"),
+        request.form.get("symptom4"),
+        request.form.get("symptom5")
     ]
 
-    # Dummy Prediction (Replace with real ML prediction)
-    if "itching" in symptoms:
-        disease = "Fungal Infection"
-    elif "nodal_skin_eruptions" in symptoms:
-        disease = "Allergy"
-    else:
-        disease = "Cervical spondylosis"
+    symptoms = [s for s in symptoms if s]
 
-    return render_template("result.html", disease=disease)
+    disease = model.predict(symptoms)
 
-# Doctor Finder
-@app.route('/doctor')
+    return render_template("result.html", prediction=disease)
+
+@app.route("/doctor")
 def doctor():
     return render_template("doctor.html")
 
