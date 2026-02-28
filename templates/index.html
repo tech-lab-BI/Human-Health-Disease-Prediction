@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+
+<h1 class="title">HEALTH CHECKUP</h1>
+
+<div class="container">
+
+    <div class="tabs">
+        <button class="active">Symptom Checker</button>
+        <a href="/doctor"><button>Find My Doctor</button></a>
+    </div>
+
+    <form action="/predict" method="POST" class="form-box">
+        <h2>Disease Checker</h2>
+
+        <input type="text" name="symptom1" placeholder="Symptom 1" required>
+        <input type="text" name="symptom2" placeholder="Symptom 2" required>
+        <input type="text" name="symptom3" placeholder="Symptom 3" required>
+        <input type="text" name="symptom4" placeholder="Symptom 4" required>
+        <input type="text" name="symptom5" placeholder="Symptom 5" required>
+
+        <button type="submit">Check</button>
+    </form>
+
+</div>
+
+</body>
+</html>

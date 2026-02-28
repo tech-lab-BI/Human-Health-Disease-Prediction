@@ -1,0 +1,13 @@
+disease-prediction/
+│
+├── app.py
+├── diseaseprediction.py   (ML model file if you have one)
+├── Testing.csv
+│
+├── templates/
+│   ├── index.html
+│   ├── result.html
+│   └── doctor.html
+│
+└── static/
+    └── style.css

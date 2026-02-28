@@ -1,0 +1,51 @@
+body {
+    font-family: Arial;
+    background: linear-gradient(to right, #89CFF0, #6495ED);
+    text-align: center;
+}
+
+.title {
+    color: blue;
+    margin-top: 20px;
+}
+
+.container {
+    margin: 50px auto;
+    width: 400px;
+}
+
+.tabs button {
+    padding: 10px;
+    border: none;
+    width: 50%;
+    cursor: pointer;
+}
+
+.tabs .active {
+    background-color: red;
+    color: white;
+}
+
+.form-box {
+    background: #6A8FD8;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.form-box input {
+    width: 90%;
+    padding: 8px;
+    margin: 8px 0;
+}
+
+button {
+    padding: 8px 15px;
+    background: darkblue;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.result-box {
+    margin-top: 100px;
+}
