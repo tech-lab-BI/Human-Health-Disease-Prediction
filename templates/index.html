@@ -132,26 +132,51 @@
                 <div class="results-header">
                     <h2>🩺 Your Health Assessment Report</h2>
                     <div class="results-actions">
+                        <button class="action-btn listen-btn" id="listen-btn" title="Listen to Report (ElevenLabs)">
+                            🔊 Listen
+                        </button>
+                        <button class="action-btn cloud-btn" id="cloud-btn" title="Save to Cloud (DigitalOcean)">
+                            ☁️ Cloud Save
+                        </button>
+                        <button class="action-btn blockchain-btn" id="blockchain-btn"
+                            title="Verify on Blockchain (Solana)">
+                            ⛓️ Verify
+                        </button>
                         <button class="download-btn" id="download-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="7 10 12 15 17 10" />
-                                <line x1="12" y1="15" x2="12" y2="3" />
-                            </svg>
-                            Download PDF
+                            📥 Download PDF
                         </button>
                         <button class="new-checkup-btn" id="new-checkup-btn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <polyline points="23 4 23 10 17 10" />
-                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                            </svg>
-                            New Checkup
+                            🔄 New Checkup
                         </button>
                     </div>
                 </div>
+
+                <!-- Integration Status Feedback -->
+                <div class="integration-feedback hidden" id="integration-feedback"></div>
+
+                <!-- Audio Player (ElevenLabs) -->
+                <div class="audio-player hidden" id="audio-player">
+                    <audio controls id="report-audio" style="width:100%"></audio>
+                </div>
+
+                <!-- Blockchain Badge -->
+                <div class="blockchain-badge hidden" id="blockchain-badge">
+                    <span class="chain-icon">⛓️</span>
+                    <div class="chain-info">
+                        <span class="chain-label">Verified on Solana</span>
+                        <a href="#" target="_blank" id="chain-link" class="chain-tx">View Transaction →</a>
+                    </div>
+                </div>
+
                 <div class="report-content" id="report-content"></div>
+
+                <!-- Health Trends (Snowflake) -->
+                <div class="health-trends" id="health-trends">
+                    <h3>📊 Population Health Trends</h3>
+                    <div class="trends-grid" id="trends-grid">Loading analytics...</div>
+                    <div class="trends-source" id="trends-source"></div>
+                </div>
+
                 <p class="input-disclaimer">HealthAI provides AI-generated health insights. Always consult a qualified
                     doctor for medical advice.</p>
             </div>

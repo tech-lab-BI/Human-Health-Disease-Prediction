@@ -33,6 +33,11 @@ from agents import (
 from recommendations import get_local_recommendations
 from pdf_generator import generate_pdf_report
 from config import GEMINI_AVAILABLE
+from integrations import (
+    speak_report, store_health_data, get_health_stats,
+    upload_report_to_cloud, hash_report, store_on_blockchain,
+    get_integration_status,
+)
 
 # ---------------------------------------------------------------------------
 # Flask App
@@ -105,6 +110,7 @@ def api_status():
         "n_diseases": metadata.get("n_diseases") if metadata else 0,
         "n_symptoms": metadata.get("n_symptoms") if metadata else 0,
         "logged_in": "user" in session,
+        "integrations": get_integration_status(),
     })
 
 
@@ -259,7 +265,11 @@ def analyze():
         "diagnosis": diagnosis,
         "recommendations": recommendations,
     }
+    session["last_report_text"] = report
     session.modified = True
+
+    # Store anonymized data for analytics (Snowflake or local)
+    store_health_data(patient_data, diagnosis)
 
     sources = []
     if metadata:
@@ -296,6 +306,75 @@ def download_report():
         buffer, as_attachment=True,
         download_name="HealthAI_Report.pdf", mimetype="application/pdf",
     )
+
+
+# ---------------------------------------------------------------------------
+# Routes — Integration APIs
+# ---------------------------------------------------------------------------
+
+@app.route("/api/speak-report", methods=["POST"])
+@login_required
+def api_speak_report():
+    """Convert health report to speech using ElevenLabs."""
+    report_text = session.get("last_report_text", "")
+    if not report_text:
+        return jsonify({"error": "No report available"}), 404
+
+    audio_bytes = speak_report(report_text)
+    if audio_bytes:
+        buffer = io.BytesIO(audio_bytes)
+        buffer.seek(0)
+        return send_file(buffer, mimetype="audio/mpeg")
+    else:
+        return jsonify({"error": "Voice output not available. Add ELEVENLABS_API_KEY to .env"}), 503
+
+
+@app.route("/api/health-stats")
+def api_health_stats():
+    """Get population health analytics from Snowflake or local data."""
+    stats = get_health_stats()
+    return jsonify(stats)
+
+
+@app.route("/api/cloud-save", methods=["POST"])
+@login_required
+def api_cloud_save():
+    """Upload PDF report to DigitalOcean Spaces."""
+    report_data = session.get("report_data")
+    if not report_data:
+        return jsonify({"error": "No report available"}), 404
+
+    pdf_bytes = generate_pdf_report(
+        report_data["patient_data"],
+        report_data["diagnosis"],
+        report_data["recommendations"],
+    )
+    result = upload_report_to_cloud(pdf_bytes)
+    if result:
+        return jsonify({"success": True, **result})
+    else:
+        return jsonify({"error": "Cloud storage not available. Add DO_SPACES_KEY to .env"}), 503
+
+
+@app.route("/api/blockchain-verify", methods=["POST"])
+@login_required
+def api_blockchain_verify():
+    """Hash report and store on Solana blockchain."""
+    report_data = session.get("report_data")
+    report_text = session.get("last_report_text", "")
+    if not report_data or not report_text:
+        return jsonify({"error": "No report available"}), 404
+
+    report_hash = hash_report(report_text, report_data["patient_data"])
+    result = store_on_blockchain(report_hash)
+    if result:
+        return jsonify({"success": True, **result})
+    else:
+        return jsonify({
+            "success": False,
+            "report_hash": report_hash,
+            "message": "Blockchain not available. Add SOLANA_PRIVATE_KEY to .env",
+        })
 
 
 # ---------------------------------------------------------------------------

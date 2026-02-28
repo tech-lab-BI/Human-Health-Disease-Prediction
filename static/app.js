@@ -105,8 +105,11 @@ function renderCurrentStep() {
 function renderComplaintStep(div) {
     div.innerHTML = `
         <div class="step-title">🩺 What's your primary health concern?</div>
-        <div class="step-subtitle">Describe your main symptoms or health complaint in your own words. Our AI will generate tailored follow-up questions based on what you describe.</div>
-        <textarea class="step-textarea" id="input-complaint" placeholder="e.g. I've been having a persistent cough and fever for the past 3 days, along with body aches...">${formData.complaint || ''}</textarea>
+        <div class="step-subtitle">Describe your main symptoms or health complaint in your own words, or use the mic button to speak. Our AI will generate tailored follow-up questions.</div>
+        <div class="textarea-wrap">
+            <textarea class="step-textarea" id="input-complaint" placeholder="e.g. I've been having a persistent cough and fever for the past 3 days, along with body aches...">${formData.complaint || ''}</textarea>
+            <button class="mic-btn" id="mic-btn" type="button" title="Speak your symptoms">🎤</button>
+        </div>
         <div class="complaint-error hidden" id="complaint-error"></div>
     `;
     // Auto-clear error on typing
@@ -623,6 +626,256 @@ if (newCheckupBtn) {
         window.location.reload();
     });
 }
+
+// ===========================================================================
+// 🎤 Voice Input (Web Speech API)
+// ===========================================================================
+
+let recognition = null;
+let isRecording = false;
+
+function setupVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (e) => {
+        let transcript = '';
+        for (let i = 0; i < e.results.length; i++) {
+            transcript += e.results[i][0].transcript;
+        }
+        const ta = document.getElementById('input-complaint');
+        if (ta) ta.value = transcript;
+    };
+
+    recognition.onerror = () => { stopRecording(); };
+    recognition.onend = () => { stopRecording(); };
+}
+
+function toggleRecording() {
+    if (!recognition) {
+        alert('Voice input is not supported in this browser. Please use Chrome or Edge.');
+        return;
+    }
+    if (isRecording) {
+        recognition.stop();
+        stopRecording();
+    } else {
+        recognition.start();
+        isRecording = true;
+        const btn = document.getElementById('mic-btn');
+        if (btn) { btn.classList.add('recording'); btn.textContent = '⏹️'; }
+    }
+}
+
+function stopRecording() {
+    isRecording = false;
+    const btn = document.getElementById('mic-btn');
+    if (btn) { btn.classList.remove('recording'); btn.textContent = '🎤'; }
+}
+
+// Bind mic button via event delegation
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'mic-btn') {
+        e.preventDefault();
+        toggleRecording();
+    }
+});
+
+setupVoiceInput();
+
+
+// ===========================================================================
+// 🔊 ElevenLabs — Listen to Report
+// ===========================================================================
+
+const listenBtn = document.getElementById('listen-btn');
+if (listenBtn) {
+    listenBtn.addEventListener('click', async () => {
+        listenBtn.disabled = true;
+        listenBtn.textContent = '⏳ Loading...';
+        showFeedback('Generating voice report with ElevenLabs...', 'info');
+
+        try {
+            const res = await fetch('/api/speak-report', { method: 'POST' });
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const player = document.getElementById('audio-player');
+                const audio = document.getElementById('report-audio');
+                audio.src = url;
+                player.classList.remove('hidden');
+                audio.play();
+                showFeedback('🔊 Playing report via ElevenLabs TTS', 'success');
+            } else {
+                const data = await res.json();
+                // Fallback to browser TTS
+                const reportEl = document.getElementById('report-content');
+                if (reportEl && window.speechSynthesis) {
+                    const utterance = new SpeechSynthesisUtterance(reportEl.innerText.slice(0, 3000));
+                    window.speechSynthesis.speak(utterance);
+                    showFeedback('🔊 Using browser voice (add ElevenLabs key for premium voice)', 'warning');
+                } else {
+                    showFeedback(data.error || 'Voice not available', 'error');
+                }
+            }
+        } catch (e) {
+            showFeedback('Failed to load voice. Using browser fallback.', 'error');
+            const reportEl = document.getElementById('report-content');
+            if (reportEl && window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(reportEl.innerText.slice(0, 3000));
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        listenBtn.disabled = false;
+        listenBtn.textContent = '🔊 Listen';
+    });
+}
+
+
+// ===========================================================================
+// ☁️ DigitalOcean — Cloud Save
+// ===========================================================================
+
+const cloudBtn = document.getElementById('cloud-btn');
+if (cloudBtn) {
+    cloudBtn.addEventListener('click', async () => {
+        cloudBtn.disabled = true;
+        cloudBtn.textContent = '⏳ Uploading...';
+        showFeedback('Uploading report to DigitalOcean Spaces...', 'info');
+
+        try {
+            const res = await fetch('/api/cloud-save', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                showFeedback(`☁️ Report saved to cloud! <a href="${data.cdn_url || data.url}" target="_blank">Open Link</a> (${data.size_kb} KB)`, 'success');
+            } else {
+                showFeedback(data.error || 'Cloud save not available', 'warning');
+            }
+        } catch (e) {
+            showFeedback('Cloud save failed. Add DO_SPACES_KEY to .env', 'error');
+        }
+        cloudBtn.disabled = false;
+        cloudBtn.textContent = '☁️ Cloud Save';
+    });
+}
+
+
+// ===========================================================================
+// ⛓️ Solana — Blockchain Verify
+// ===========================================================================
+
+const blockchainBtn = document.getElementById('blockchain-btn');
+if (blockchainBtn) {
+    blockchainBtn.addEventListener('click', async () => {
+        blockchainBtn.disabled = true;
+        blockchainBtn.textContent = '⏳ Verifying...';
+        showFeedback('Storing report hash on Solana blockchain...', 'info');
+
+        try {
+            const res = await fetch('/api/blockchain-verify', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                const badge = document.getElementById('blockchain-badge');
+                const chainLink = document.getElementById('chain-link');
+                badge.classList.remove('hidden');
+                chainLink.href = data.explorer_url;
+                chainLink.textContent = `TX: ${data.tx_signature.slice(0, 12)}... →`;
+                showFeedback(`⛓️ Verified on Solana (${data.network})! Hash: ${data.report_hash.slice(0, 16)}...`, 'success');
+            } else {
+                showFeedback(`Report hash: ${data.report_hash ? data.report_hash.slice(0, 24) + '...' : 'N/A'}. ${data.message || 'Add SOLANA_PRIVATE_KEY to .env'}`, 'warning');
+            }
+        } catch (e) {
+            showFeedback('Blockchain verification failed', 'error');
+        }
+        blockchainBtn.disabled = false;
+        blockchainBtn.textContent = '⛓️ Verify';
+    });
+}
+
+
+// ===========================================================================
+// 📊 Snowflake — Health Trends
+// ===========================================================================
+
+async function loadHealthTrends() {
+    const grid = document.getElementById('trends-grid');
+    const source = document.getElementById('trends-source');
+    if (!grid) return;
+
+    try {
+        const res = await fetch('/api/health-stats');
+        const data = await res.json();
+
+        if (data.total_checkups === 0) {
+            grid.innerHTML = '<div class="trend-empty">No analytics data yet. Complete checkups to see trends.</div>';
+            source.textContent = '';
+            return;
+        }
+
+        let html = `
+            <div class="trend-card">
+                <div class="trend-number">${data.total_checkups}</div>
+                <div class="trend-label">Total Checkups</div>
+            </div>
+            <div class="trend-card">
+                <div class="trend-number">${data.unique_diseases}</div>
+                <div class="trend-label">Diseases Detected</div>
+            </div>
+        `;
+
+        if (data.top_diseases && data.top_diseases.length > 0) {
+            html += '<div class="trend-card trend-wide"><div class="trend-label">Top Conditions</div><div class="trend-bars">';
+            const maxCount = data.top_diseases[0].count;
+            for (const d of data.top_diseases) {
+                const pct = Math.round((d.count / maxCount) * 100);
+                html += `<div class="trend-bar-row">
+                    <span class="trend-bar-label">${d.disease}</span>
+                    <div class="trend-bar-bg"><div class="trend-bar-fill" style="width:${pct}%"></div></div>
+                    <span class="trend-bar-count">${d.count}</span>
+                </div>`;
+            }
+            html += '</div></div>';
+        }
+
+        grid.innerHTML = html;
+        source.textContent = `Data source: ${data.source === 'snowflake' ? '❄️ Snowflake' : '💾 Local'}`;
+    } catch (e) {
+        grid.innerHTML = '<div class="trend-empty">Analytics unavailable</div>';
+    }
+}
+
+
+// ===========================================================================
+// Integration Feedback Banner
+// ===========================================================================
+
+function showFeedback(msg, type = 'info') {
+    const el = document.getElementById('integration-feedback');
+    if (!el) return;
+    el.innerHTML = msg;
+    el.className = `integration-feedback feedback-${type}`;
+    el.classList.remove('hidden');
+    if (type !== 'error') {
+        setTimeout(() => { el.classList.add('hidden'); }, 8000);
+    }
+}
+
+
+// ===========================================================================
+// Update showResults to also load trends
+// ===========================================================================
+
+const _origShowResults = showResults;
+showResults = function (result) {
+    _origShowResults(result);
+    loadHealthTrends();
+};
+
 
 // ===========================================================================
 // Event Listeners
