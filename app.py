@@ -1,6 +1,3 @@
-
-from flask import Flask, render_template, request
-from diseaseprediction import DiseasePrediction
 """
 app.py — HealthAI Flask application (routes only).
 
@@ -41,214 +38,6 @@ from config import GEMINI_AVAILABLE
 # Flask App
 # ---------------------------------------------------------------------------
 app = Flask(__name__)
-
-model = DiseasePrediction()
-
-@app.route("/")
-=======
-<<<<<<< HEAD
-from flask import Flask, render_template, request, redirect, session, url_for
-import pickle
-import pandas as pd
-import os
-import json
-from datetime import datetime
-from authlib.integrations.flask_client import OAuth
-from urllib.parse import urlencode
-from dotenv import load_dotenv
-import google.generativeai as genai
-import markdown
-
-load_dotenv()
-
-app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super-secret-key-change-in-production")
-
-# ─── Auth0 Configuration ────────────────────────────────────────
-AUTH0_CLIENT_ID = os.environ.get('AUTH0_CLIENT_ID', 'placeholder')
-AUTH0_CLIENT_SECRET = os.environ.get('AUTH0_CLIENT_SECRET', 'placeholder')
-AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN', 'placeholder.auth0.com')
-
-oauth = OAuth(app)
-
-auth0 = oauth.register(
-    'auth0',
-    client_id=AUTH0_CLIENT_ID,
-    client_secret=AUTH0_CLIENT_SECRET,
-    api_base_url=f"https://{AUTH0_DOMAIN}",
-    access_token_url=f"https://{AUTH0_DOMAIN}/oauth/token",
-    authorize_url=f"https://{AUTH0_DOMAIN}/authorize",
-    server_metadata_url=f"https://{AUTH0_DOMAIN}/.well-known/openid-configuration",
-    client_kwargs={
-        'scope': 'openid profile email',
-    },
-)
-
-# ─── Gemini API Configuration ───────────────────────────────────
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
-# ─── Load Data ──────────────────────────────────────────────────
-# Load trained model
-try:
-    model = pickle.load(open("model.pkl", "rb"))
-except:
-    model = None
-
-# Load doctors
-def load_doctors():
-    with open("doctors.json", "r") as f:
-        return json.load(f)
-
-# In-memory consultation requests (for hackathon demo)
-consultation_requests = []
-
-# ─── Helper: Get Gemini Remedies ────────────────────────────────
-FALLBACK_REMEDIES = {
-    "Fungal Infection": "<h3>About</h3><p>A fungal infection is caused by fungi that can affect skin, nails, or internal organs.</p><h3>Remedies</h3><ul><li>Keep the affected area clean and dry</li><li>Apply antifungal cream (clotrimazole/miconazole)</li><li>Wear loose, breathable clothing</li><li>Use antifungal powder in skin folds</li></ul><h3>Precautions</h3><ul><li>Avoid sharing towels or personal items</li><li>Change socks and underwear daily</li><li>Avoid walking barefoot in public showers</li></ul><h3>Diet</h3><ul><li>Eat probiotic-rich foods (yogurt, kefir)</li><li>Reduce sugar intake</li><li>Include garlic and turmeric in your diet</li></ul>",
-    "Allergy": "<h3>About</h3><p>An allergy is an immune system response to a foreign substance that isn't typically harmful.</p><h3>Remedies</h3><ul><li>Identify and avoid allergens</li><li>Use antihistamines as directed</li><li>Apply cold compress for skin reactions</li><li>Use saline nasal spray for nasal symptoms</li></ul><h3>Precautions</h3><ul><li>Keep windows closed during high pollen seasons</li><li>Wash bedding frequently in hot water</li><li>Use air purifiers indoors</li></ul><h3>Diet</h3><ul><li>Eat anti-inflammatory foods (berries, leafy greens)</li><li>Include omega-3 rich foods (fish, flaxseeds)</li><li>Stay well hydrated</li></ul>",
-    "Migraine": "<h3>About</h3><p>A migraine is a severe, recurring headache often accompanied by nausea and sensitivity to light.</p><h3>Remedies</h3><ul><li>Rest in a dark, quiet room</li><li>Apply cold or warm compress to your head</li><li>Stay hydrated</li><li>Practice relaxation techniques</li></ul><h3>Precautions</h3><ul><li>Maintain a regular sleep schedule</li><li>Avoid known triggers (stress, certain foods)</li><li>Limit screen time</li></ul><h3>Diet</h3><ul><li>Eat magnesium-rich foods (spinach, almonds)</li><li>Avoid processed foods and alcohol</li><li>Keep a food diary to identify triggers</li></ul>",
-    "Gastritis": "<h3>About</h3><p>Gastritis is inflammation of the stomach lining, causing pain, nausea, and indigestion.</p><h3>Remedies</h3><ul><li>Eat smaller, more frequent meals</li><li>Avoid spicy and acidic foods</li><li>Try ginger or chamomile tea</li><li>Take antacids if recommended by doctor</li></ul><h3>Precautions</h3><ul><li>Avoid NSAIDs (ibuprofen, aspirin)</li><li>Limit alcohol and caffeine</li><li>Don't eat right before bed</li></ul><h3>Diet</h3><ul><li>Eat bland foods (rice, bananas, toast)</li><li>Include probiotics</li><li>Avoid fried and fatty foods</li></ul>",
-    "Arthritis": "<h3>About</h3><p>Arthritis causes joint inflammation leading to pain, stiffness, and reduced mobility.</p><h3>Remedies</h3><ul><li>Apply hot/cold therapy to affected joints</li><li>Do gentle exercises (swimming, yoga)</li><li>Maintain a healthy weight</li><li>Use joint supports or braces</li></ul><h3>Precautions</h3><ul><li>Avoid high-impact activities</li><li>Don't ignore persistent joint pain</li><li>Protect joints during physical activity</li></ul><h3>Diet</h3><ul><li>Eat omega-3 rich foods (salmon, walnuts)</li><li>Include turmeric and ginger</li><li>Avoid sugar and processed foods</li></ul>",
-}
-DEFAULT_FALLBACK = "<h3>General Health Tips</h3><ul><li>Stay hydrated — drink at least 8 glasses of water daily</li><li>Get adequate rest and sleep (7-8 hours)</li><li>Eat a balanced diet rich in fruits and vegetables</li><li>Exercise regularly (at least 30 min/day)</li><li>Manage stress through meditation or yoga</li><li>Monitor your symptoms and keep a health diary</li></ul><h3>⚠️ Important</h3><p>Please consult a qualified healthcare professional for a proper diagnosis and personalized treatment plan.</p>"
-
-def get_gemini_remedies(disease, symptoms):
-    """Get detailed remedies from Gemini API with fallback."""
-    models_to_try = ['gemini-1.5-flash', 'gemini-2.0-flash']
-
-    for model_name in models_to_try:
-        try:
-            gemini_model = genai.GenerativeModel(model_name)
-            prompt = f"""You are a medical health advisor AI. A patient has been predicted to possibly have: **{disease}**.
-Their symptoms are: {', '.join([s for s in symptoms if s])}.
-
-Please provide:
-1. **About the Disease** - A brief explanation of what this disease is.
-2. **Recommended Remedies** - Home remedies and lifestyle changes.
-3. **Precautions** - Things the patient should avoid.
-4. **When to See a Doctor** - Warning signs that need immediate medical attention.
-5. **Dietary Suggestions** - Foods to eat and avoid.
-
-Keep the response concise, well-formatted with bullet points, and easy to understand.
-Important: This is for informational purposes only and not a substitute for professional medical advice."""
-
-            response = gemini_model.generate_content(prompt)
-            html_content = markdown.markdown(response.text)
-            return html_content
-        except Exception:
-            continue
-
-    # All API calls failed — use static fallback
-    return FALLBACK_REMEDIES.get(disease, DEFAULT_FALLBACK)
-
-# ═══════════════════════════════════════════════════════════════
-# ROUTES
-# ═══════════════════════════════════════════════════════════════
-
-# ─── Home Page ──────────────────────────────────────────────────
-@app.route('/')
-=======
-from flask import Flask, render_template, request
-from diseaseprediction import DiseasePrediction
-
-app = Flask(__name__)
-model = DiseasePrediction()
-
-@app.route("/")
->>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
->>>>>>> RajSide-Changes
-def home():
-    return render_template("index.html", session=session)
-
-<<<<<<< HEAD
-@app.route("/predict", methods=["POST"])
-def predict():
-
-    symptoms = [
-=======
-<<<<<<< HEAD
-# ─── Disease Prediction ────────────────────────────────────────
-@app.route('/predict', methods=['POST'])
-=======
-@app.route("/predict", methods=["POST"])
->>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
-def predict():
-
-    symptoms = [
-<<<<<<< HEAD
-        request.form.get('symptom1', ''),
-        request.form.get('symptom2', ''),
-        request.form.get('symptom3', ''),
-        request.form.get('symptom4', ''),
-        request.form.get('symptom5', '')
-=======
->>>>>>> RajSide-Changes
-        request.form.get("symptom1"),
-        request.form.get("symptom2"),
-        request.form.get("symptom3"),
-        request.form.get("symptom4"),
-        request.form.get("symptom5")
-<<<<<<< HEAD
-=======
->>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
->>>>>>> RajSide-Changes
-    ]
-    # Filter out empty symptoms
-    active_symptoms = [s for s in symptoms if s.strip()]
-
-<<<<<<< HEAD
-    symptoms = [s for s in symptoms if s]
-
-    disease = model.predict(symptoms)
-
-    return render_template("result.html", prediction=disease)
-
-@app.route("/doctor")
-=======
-<<<<<<< HEAD
-    # Dummy Prediction (Replace with real ML prediction)
-    if "itching" in active_symptoms:
-        disease = "Fungal Infection"
-    elif "nodal_skin_eruptions" in active_symptoms:
-        disease = "Allergy"
-    elif "headache" in active_symptoms:
-        disease = "Migraine"
-    elif "stomach_pain" in active_symptoms:
-        disease = "Gastritis"
-    elif "joint_pain" in active_symptoms:
-        disease = "Arthritis"
-    else:
-        disease = "Cervical Spondylosis"
-
-    # Store disease in session for later use
-    session['last_disease'] = disease
-    session['last_symptoms'] = active_symptoms
-
-    # Generate remedies based on login status
-    remedies = ""
-    if session.get('user'):
-        # Logged-in user: full Gemini AI remedies
-        remedies = get_gemini_remedies(disease, active_symptoms)
-    # Guest users get static tips from the template
-
-    return render_template("result.html", disease=disease, remedies=remedies, session=session)
-
-# ─── Doctor Page ────────────────────────────────────────────────
-@app.route('/doctor')
-=======
-    symptoms = [s for s in symptoms if s]
-
-    disease = model.predict(symptoms)
-
-    return render_template("result.html", prediction=disease)
-
-@app.route("/doctor")
->>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
->>>>>>> RajSide-Changes
-def doctor():
-    return render_template("doctor.html")
 app.secret_key = FLASK_SECRET_KEY
 
 oauth = init_oauth(app)
@@ -324,6 +113,10 @@ def get_symptoms_api():
     return jsonify({"symptoms": SYMPTOMS})
 
 
+# ---------------------------------------------------------------------------
+# Input Validation
+# ---------------------------------------------------------------------------
+
 HEALTH_KEYWORDS = {
     "pain", "ache", "sore", "hurt", "fever", "cough", "cold", "flu",
     "headache", "stomach", "nausea", "vomit", "diarrhea", "diarrhoea",
@@ -368,7 +161,6 @@ def _is_health_related(text: str) -> tuple[bool, str]:
     extracted = extract_symptoms_from_text(text)
     medical_matches = [s for s in extracted if s.lower() not in AMBIGUOUS_SYMPTOMS or s.lower() in text_lower]
     if len(medical_matches) >= 1:
-        # Double-check: if only 1 match and it's short, need the exact word present
         if len(medical_matches) == 1:
             sym = medical_matches[0].lower()
             sym_words = sym.split()
@@ -377,20 +169,19 @@ def _is_health_related(text: str) -> tuple[bool, str]:
         else:
             return True, ""
 
-    # Strict suffix matching — only match plural/tense forms like "headaches"→"headache"
+    # Strict suffix matching — only match plural/tense forms
     for word in words:
-        # Strip common English suffixes to get the stem
         stems = {word}
         if word.endswith("s") and len(word) > 3:
-            stems.add(word[:-1])  # pains → pain
+            stems.add(word[:-1])
         if word.endswith("es") and len(word) > 4:
-            stems.add(word[:-2])  # aches → ach
+            stems.add(word[:-2])
         if word.endswith("ing") and len(word) > 5:
-            stems.add(word[:-3])  # hurting → hurt
+            stems.add(word[:-3])
         if word.endswith("ed") and len(word) > 4:
-            stems.add(word[:-2])  # burned → burn
+            stems.add(word[:-2])
         if word.endswith("ness") and len(word) > 6:
-            stems.add(word[:-4])  # dizziness → dizzy
+            stems.add(word[:-4])
         if stems & HEALTH_KEYWORDS:
             return True, ""
 
@@ -403,7 +194,6 @@ def api_generate_steps():
     data = request.get_json()
     complaint = data.get("complaint", "").strip()
 
-    # Validate input is health-related
     is_valid, error_msg = _is_health_related(complaint)
     if not is_valid:
         return jsonify({"valid": False, "error": error_msg, "steps": []})
@@ -418,19 +208,14 @@ def analyze():
     """Run the full analysis pipeline on all collected step data."""
     data = request.get_json()
 
-    # Collect all symptoms from all steps
     all_symptoms = []
-
-    # Step 1: complaint — extract symptoms
     complaint = data.get("complaint", "")
     all_symptoms.extend(extract_symptoms_from_text(complaint))
 
-    # Step 5: selected symptoms
     for s in data.get("selected_symptoms", []):
         if s not in all_symptoms:
             all_symptoms.append(s)
 
-    # Others text fields
     for field in ["other_symptoms", "other_conditions", "other_body_areas"]:
         other = data.get(field, "")
         if other:
@@ -438,13 +223,11 @@ def analyze():
                 [s for s in extract_symptoms_from_text(other) if s not in all_symptoms]
             )
 
-    # Body area to symptom mapping
     for area in data.get("body_areas", []):
         for sym in BODY_AREA_SYMPTOM_MAP.get(area, []):
             if sym not in all_symptoms:
                 all_symptoms.append(sym)
 
-    # Build patient data
     patient_data = {
         "complaint": complaint,
         "age": data.get("age", "N/A"),
@@ -458,24 +241,19 @@ def analyze():
         "all_symptoms": all_symptoms,
     }
 
-    # === Agent 2: ML DIAGNOSIS ===
     ml_diagnosis = run_ml_diagnosis(all_symptoms)
 
-    # === Gemini enhancement ===
     gemini_diag = run_gemini_diagnosis(patient_data, ml_diagnosis)
     diagnosis = gemini_diag if gemini_diag else ml_diagnosis
 
-    # === Agent 3: RECOMMENDATIONS ===
     gemini_recs = run_gemini_recommendations(diagnosis)
     recommendations = gemini_recs if gemini_recs else get_local_recommendations(diagnosis)
 
-    # === Agent 4: SUMMARY REPORT ===
     gemini_report = run_gemini_summary(patient_data, diagnosis, recommendations)
     report = gemini_report if gemini_report else generate_local_report(
         patient_data, diagnosis, recommendations
     )
 
-    # Save to session for PDF download
     session["report_data"] = {
         "patient_data": patient_data,
         "diagnosis": diagnosis,
