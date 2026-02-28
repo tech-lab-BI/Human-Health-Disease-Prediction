@@ -106,7 +106,8 @@ def api_status():
     return jsonify({
         "gemini_available": GEMINI_AVAILABLE,
         "ml_model_loaded": metadata is not None,
-        "model_accuracy": metadata.get("accuracy") if metadata else None,
+        "rf_accuracy": metadata.get("rf_accuracy") if metadata else None,
+        "svm_accuracy": metadata.get("svm_accuracy") if metadata else None,
         "n_diseases": metadata.get("n_diseases") if metadata else 0,
         "n_symptoms": metadata.get("n_symptoms") if metadata else 0,
         "logged_in": "user" in session,

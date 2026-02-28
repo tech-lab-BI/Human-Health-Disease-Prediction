@@ -37,6 +37,16 @@ async function fetchStatus() {
             aiStatus.className = 'ai-status offline';
             statusText.textContent = 'ML Only';
         }
+
+        // 🔑 Show both RF and SVM accuracies
+        if (data.rf_accuracy !== null) {
+            document.getElementById('rf-accuracy').textContent =
+                `RF Accuracy: ${data.rf_accuracy}%`;
+        }
+        if (data.svm_accuracy !== null) {
+            document.getElementById('svm-accuracy').textContent =
+                `SVM Accuracy: ${data.svm_accuracy}%`;
+        }
     } catch (e) {
         aiStatus.className = 'ai-status offline';
         statusText.textContent = 'Offline';
@@ -568,7 +578,22 @@ async function runAnalysis() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
-    }).then(r => r.json());
+    }).then(r => r.json())
+    .then(data => {
+        // Show ensemble predictions
+        displayDiagnosis(data.diagnosis.top_conditions);
+
+        // 🔑 Optionally show model details
+        if (data.diagnosis.details) {
+            document.getElementById('rf-result').textContent =
+                `Random Forest Model: ${data.diagnosis.details.RandomForest}`;
+            document.getElementById('svm-result').textContent =
+                `SVM Model: ${data.diagnosis.details.SVM}`;
+        }
+
+        return data; // keep promise chain intact
+    });
+
 
     await animateStep('astep-2', 'diagnosis', 800);
     await animateStep('astep-3', null, 800);
