@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, request, redirect, session, url_for
 import pickle
 import pandas as pd
@@ -100,22 +101,45 @@ Important: This is for informational purposes only and not a substitute for prof
 
 # ─── Home Page ──────────────────────────────────────────────────
 @app.route('/')
+=======
+from flask import Flask, render_template, request
+from diseaseprediction import DiseasePrediction
+
+app = Flask(__name__)
+model = DiseasePrediction()
+
+@app.route("/")
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
 def home():
     return render_template("index.html", session=session)
 
+<<<<<<< HEAD
 # ─── Disease Prediction ────────────────────────────────────────
 @app.route('/predict', methods=['POST'])
+=======
+@app.route("/predict", methods=["POST"])
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
 def predict():
+
     symptoms = [
+<<<<<<< HEAD
         request.form.get('symptom1', ''),
         request.form.get('symptom2', ''),
         request.form.get('symptom3', ''),
         request.form.get('symptom4', ''),
         request.form.get('symptom5', '')
+=======
+        request.form.get("symptom1"),
+        request.form.get("symptom2"),
+        request.form.get("symptom3"),
+        request.form.get("symptom4"),
+        request.form.get("symptom5")
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
     ]
     # Filter out empty symptoms
     active_symptoms = [s for s in symptoms if s.strip()]
 
+<<<<<<< HEAD
     # Dummy Prediction (Replace with real ML prediction)
     if "itching" in active_symptoms:
         disease = "Fungal Infection"
@@ -145,6 +169,15 @@ def predict():
 
 # ─── Doctor Page ────────────────────────────────────────────────
 @app.route('/doctor')
+=======
+    symptoms = [s for s in symptoms if s]
+
+    disease = model.predict(symptoms)
+
+    return render_template("result.html", prediction=disease)
+
+@app.route("/doctor")
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
 def doctor():
     return render_template("doctor.html", session=session)
 
