@@ -200,6 +200,7 @@ def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = Non
                     json.dumps(patient_data.get("lifestyle", {})),
                 ))
             finally:
+                conn.commit()
                 conn.close()
             return True
         except Exception as e:
