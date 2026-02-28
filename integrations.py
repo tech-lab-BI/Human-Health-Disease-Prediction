@@ -188,13 +188,20 @@ def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = Non
                     INSERT INTO health_checkups (user_email, age_range, gender, complaint, severity,
                         duration, symptoms, predicted_disease, confidence, body_areas,
                         preexisting, lifestyle)
-                    SELECT %s, %s, %s, %s, %s, %s, PARSE_JSON(%s), %s, %s,
+                    SELECT 
+                        %s, %s, %s, %s, %s, %s, 
+                        PARSE_JSON(%s), %s, %s, 
                         PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s)
                 """, (
-                    user_email, record["age_range"], record["gender"],
-                    record["complaint_category"], record["severity"],
-                    record["duration"], json.dumps(record["top_symptoms"]),
-                    record["predicted_disease"], record["confidence"],
+                    str(user_email) if user_email else None, 
+                    str(record["age_range"]), 
+                    str(record["gender"]),
+                    str(record["complaint_category"]), 
+                    str(record["severity"]),
+                    str(record["duration"]), 
+                    json.dumps(record["top_symptoms"]),
+                    str(record["predicted_disease"]), 
+                    float(record["confidence"]),
                     json.dumps(record["body_areas"]),
                     json.dumps(record["preexisting"]),
                     json.dumps(patient_data.get("lifestyle", {})),

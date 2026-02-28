@@ -213,82 +213,88 @@ def api_generate_steps():
 @login_required
 def analyze():
     """Run the full analysis pipeline on all collected step data."""
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    all_symptoms = []
-    complaint = data.get("complaint", "")
-    all_symptoms.extend(extract_symptoms_from_text(complaint))
+        all_symptoms = []
+        complaint = data.get("complaint", "")
+        all_symptoms.extend(extract_symptoms_from_text(complaint))
 
-    for s in data.get("selected_symptoms", []):
-        if s not in all_symptoms:
-            all_symptoms.append(s)
+        for s in data.get("selected_symptoms", []):
+            if s not in all_symptoms:
+                all_symptoms.append(s)
 
-    for field in ["other_symptoms", "other_conditions", "other_body_areas"]:
-        other = data.get(field, "")
-        if other:
-            all_symptoms.extend(
-                [s for s in extract_symptoms_from_text(other) if s not in all_symptoms]
-            )
+        for field in ["other_symptoms", "other_conditions", "other_body_areas"]:
+            other = data.get(field, "")
+            if other:
+                all_symptoms.extend(
+                    [s for s in extract_symptoms_from_text(other) if s not in all_symptoms]
+                )
 
-    for area in data.get("body_areas", []):
-        for sym in BODY_AREA_SYMPTOM_MAP.get(area, []):
-            if sym not in all_symptoms:
-                all_symptoms.append(sym)
+        for area in data.get("body_areas", []):
+            for sym in BODY_AREA_SYMPTOM_MAP.get(area, []):
+                if sym not in all_symptoms:
+                    all_symptoms.append(sym)
 
-    patient_data = {
-        "name": data.get("name", "Not Provided"),
-        "complaint": complaint,
-        "age": data.get("age", "N/A"),
-        "gender": data.get("gender", "N/A"),
-        "duration": data.get("duration", "N/A"),
-        "severity": data.get("severity", "N/A"),
-        "body_areas": data.get("body_areas", []),
-        "preexisting": data.get("preexisting", []),
-        "lifestyle": data.get("lifestyle", {}),
-        "family_history": data.get("family_history", []),
-        "all_symptoms": all_symptoms,
-    }
+        patient_data = {
+            "name": data.get("name", "Not Provided"),
+            "complaint": complaint,
+            "age": data.get("age", "N/A"),
+            "gender": data.get("gender", "N/A"),
+            "duration": data.get("duration", "N/A"),
+            "severity": data.get("severity", "N/A"),
+            "body_areas": data.get("body_areas", []),
+            "preexisting": data.get("preexisting", []),
+            "lifestyle": data.get("lifestyle", {}),
+            "family_history": data.get("family_history", []),
+            "all_symptoms": all_symptoms,
+        }
 
-    ml_diagnosis = run_ml_diagnosis(all_symptoms)
+        ml_diagnosis = run_ml_diagnosis(all_symptoms)
 
-    gemini_diag = run_gemini_diagnosis(patient_data, ml_diagnosis)
-    diagnosis = gemini_diag if gemini_diag else ml_diagnosis
+        gemini_diag = run_gemini_diagnosis(patient_data, ml_diagnosis)
+        diagnosis = gemini_diag if gemini_diag else ml_diagnosis
 
-    gemini_recs = run_gemini_recommendations(diagnosis)
-    recommendations = gemini_recs if gemini_recs else get_local_recommendations(diagnosis)
+        gemini_recs = run_gemini_recommendations(diagnosis)
+        recommendations = gemini_recs if gemini_recs else get_local_recommendations(diagnosis)
 
-    gemini_report = run_gemini_summary(patient_data, diagnosis, recommendations)
-    report = gemini_report if gemini_report else generate_local_report(
-        patient_data, diagnosis, recommendations
-    )
+        gemini_report = run_gemini_summary(patient_data, diagnosis, recommendations)
+        report = gemini_report if gemini_report else generate_local_report(
+            patient_data, diagnosis, recommendations
+        )
 
-    session["report_data"] = {
-        "patient_data": patient_data,
-        "diagnosis": diagnosis,
-        "recommendations": recommendations,
-    }
-    session["last_report_text"] = report
-    session.modified = True
+        session["report_data"] = {
+            "patient_data": patient_data,
+            "diagnosis": diagnosis,
+            "recommendations": recommendations,
+        }
+        session["last_report_text"] = report
+        session.modified = True
 
-    # Store anonymized data for analytics and user records (Snowflake or local)
-    user_obj = session.get("user", {})
-    user_email = user_obj.get("email") or user_obj.get("name") 
-    print(f"DEBUG SAVE RECORD: user_obj={user_obj}, user_email={user_email}")
-    store_health_data(patient_data, diagnosis, user_email)
+        # Store anonymized data for analytics and user records (Snowflake or local)
+        user_obj = session.get("user", {})
+        user_email = user_obj.get("email") or user_obj.get("name") 
+        print(f"DEBUG SAVE RECORD: user_obj={user_obj}, user_email={user_email}")
+        store_health_data(patient_data, diagnosis, user_email)
 
-    sources = []
-    if metadata:
-        sources.append(f"ML Model ({metadata.get('accuracy', 'N/A')}%)")
-    if gemini_diag or gemini_recs or gemini_report:
-        sources.append("Gemini AI")
+        sources = []
+        if metadata:
+            sources.append(f"ML Model ({metadata.get('accuracy', 'N/A')}%)")
+        if gemini_diag or gemini_recs or gemini_report:
+            sources.append("Gemini AI")
 
-    return jsonify({
-        "report": report,
-        "diagnosis": diagnosis,
-        "recommendations": recommendations,
-        "powered_by": " + ".join(sources) if sources else "HealthAI",
-        "gemini_used": bool(gemini_diag),
-    })
+        return jsonify({
+            "report": report,
+            "diagnosis": diagnosis,
+            "recommendations": recommendations,
+            "powered_by": " + ".join(sources) if sources else "HealthAI",
+            "gemini_used": bool(gemini_diag),
+        })
+    except Exception as e:
+        print(f"CRITICAL ERROR IN ANALYZE PIEPELINE: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/download-report")
