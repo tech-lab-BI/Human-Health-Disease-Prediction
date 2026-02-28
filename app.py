@@ -34,7 +34,7 @@ from recommendations import get_local_recommendations
 from pdf_generator import generate_pdf_report
 from config import GEMINI_AVAILABLE
 from integrations import (
-    speak_report, store_health_data, get_health_stats,
+    speak_report, store_health_data, get_health_stats, get_user_records,
     upload_report_to_cloud, hash_report, store_on_blockchain,
     get_integration_status,
 )
@@ -270,8 +270,9 @@ def analyze():
     session["last_report_text"] = report
     session.modified = True
 
-    # Store anonymized data for analytics (Snowflake or local)
-    store_health_data(patient_data, diagnosis)
+    # Store anonymized data for analytics and user records (Snowflake or local)
+    user_email = session.get("user", {}).get("email")
+    store_health_data(patient_data, diagnosis, user_email)
 
     sources = []
     if metadata:
@@ -331,11 +332,22 @@ def api_speak_report():
         return jsonify({"error": "Voice output not available. Add ELEVENLABS_API_KEY to .env"}), 503
 
 
-@app.route("/api/health-stats")
+@app.route("/api/health-stats", methods=["GET"])
 def api_health_stats():
-    """Get population health analytics from Snowflake or local data."""
-    stats = get_health_stats()
-    return jsonify(stats)
+    """Get population health insights from Snowflake."""
+    return jsonify(get_health_stats())
+
+
+@app.route("/api/my-records", methods=["GET"])
+@login_required
+def api_my_records():
+    """Get past health checkup records for the logged-in user."""
+    user_email = session.get("user", {}).get("email")
+    if not user_email:
+        return jsonify({"error": "User email not found"}), 400
+    
+    records = get_user_records(user_email)
+    return jsonify({"records": records})
 
 
 @app.route("/api/cloud-save", methods=["POST"])

@@ -129,6 +129,7 @@ def _ensure_snowflake_table():
         cur.execute("""
             CREATE TABLE IF NOT EXISTS health_checkups (
                 id STRING DEFAULT UUID_STRING(),
+                user_email STRING,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
                 age_range STRING,
                 gender STRING,
@@ -143,14 +144,20 @@ def _ensure_snowflake_table():
                 lifestyle VARIANT
             )
         """)
+        try:
+            # Add column if it doesn't already exist (Snowflake specific syntax)
+            cur.execute("ALTER TABLE health_checkups ADD COLUMN user_email STRING")
+        except:
+            pass
     finally:
         conn.close()
 
 
-def store_health_data(patient_data: dict, diagnosis: dict) -> bool:
+def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = None) -> bool:
     """Store anonymized checkup data in Snowflake (or local fallback)."""
     record = {
         "timestamp": datetime.utcnow().isoformat(),
+        "user_email": user_email,
         "age_range": patient_data.get("age", "N/A"),
         "gender": patient_data.get("gender", "N/A"),
         "complaint_category": _categorize_complaint(patient_data.get("complaint", "")),
@@ -178,13 +185,13 @@ def store_health_data(patient_data: dict, diagnosis: dict) -> bool:
                 cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
                 cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
                 cur.execute("""
-                    INSERT INTO health_checkups (age_range, gender, complaint, severity,
+                    INSERT INTO health_checkups (user_email, age_range, gender, complaint, severity,
                         duration, symptoms, predicted_disease, confidence, body_areas,
                         preexisting, lifestyle)
-                    SELECT %s, %s, %s, %s, %s, PARSE_JSON(%s), %s, %s,
+                    SELECT %s, %s, %s, %s, %s, %s, PARSE_JSON(%s), %s, %s,
                         PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s)
                 """, (
-                    record["age_range"], record["gender"],
+                    user_email, record["age_range"], record["gender"],
                     record["complaint_category"], record["severity"],
                     record["duration"], json.dumps(record["top_symptoms"]),
                     record["predicted_disease"], record["confidence"],
@@ -248,21 +255,29 @@ def get_health_stats() -> dict:
 
     diseases = {}
     ages = {}
-    for r in data:
-        d = r.get("predicted_disease", "")
-        if d:
-            diseases[d] = diseases.get(d, 0) + 1
-        a = r.get("age_range", "")
-        if a:
-            ages[a] = ages.get(a, 0) + 1
+    total = len(data)
+
+    # Filter out empty diseases just like the SQL query
+    valid_diseases = [r for r in data if r["predicted_disease"]]
+
+    for r in valid_diseases:
+        d = r["predicted_disease"]
+        diseases[d] = diseases.get(d, 0) + 1
+
+    valid_ages = [r for r in data if r["age_range"] and r["age_range"] != "N/A"]
+    for r in valid_ages:
+        a = r["age_range"]
+        ages[a] = ages.get(a, 0) + 1
+
+    sorted_d = sorted(diseases.items(), key=lambda x: x[1], reverse=True)[:5]
+    sorted_a = sorted(ages.items(), key=lambda x: x[1], reverse=True)
 
     return {
         "source": "local",
-        "total_checkups": len(data),
+        "total_checkups": total,
         "unique_diseases": len(diseases),
-        "top_diseases": sorted([{"disease": k, "count": v} for k, v in diseases.items()],
-                               key=lambda x: x["count"], reverse=True)[:5],
-        "by_age": [{"age": k, "count": v} for k, v in ages.items()],
+        "top_diseases": [{"disease": d, "count": c} for d, c in sorted_d],
+        "by_age": [{"age": a, "count": c} for a, c in sorted_a],
     }
 
 
@@ -272,6 +287,59 @@ def _categorize_complaint(complaint: str) -> str:
     if len(complaint) > 100:
         complaint = complaint[:100]
     return complaint
+
+
+def get_user_records(user_email: str) -> list:
+    """Get past health records for a specific user."""
+    if not user_email:
+        return []
+
+    if SNOWFLAKE_AVAILABLE:
+        try:
+            _ensure_snowflake_table()
+            conn = _get_snowflake_conn()
+            try:
+                cur = conn.cursor()
+                cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
+                cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
+                
+                cur.execute("""
+                    SELECT created_at, predicted_disease, confidence, complaint, age_range, gender
+                    FROM health_checkups
+                    WHERE user_email = %s
+                    ORDER BY created_at DESC
+                """, (user_email,))
+                
+                records = []
+                for r in cur.fetchall():
+                    dt = r[0].isoformat() if hasattr(r[0], 'isoformat') else str(r[0])
+                    records.append({
+                        "created_at": dt,
+                        "predicted_disease": r[1],
+                        "confidence": r[2],
+                        "complaint": r[3],
+                        "age_range": r[4],
+                        "gender": r[5]
+                    })
+                return records
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"⚠️  Snowflake query error: {e}")
+
+    # Local fallback
+    records = []
+    for r in _local_analytics:
+        if r.get("user_email") == user_email:
+            records.append({
+                "created_at": r.get("timestamp"),
+                "predicted_disease": r.get("predicted_disease"),
+                "confidence": r.get("confidence"),
+                "complaint": r.get("complaint_category"),
+                "age_range": r.get("age_range"),
+                "gender": r.get("gender")
+            })
+    return sorted(records, key=lambda x: x["created_at"], reverse=True)
 
 
 # ===========================================================================

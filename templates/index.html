@@ -74,7 +74,28 @@
             {% if not user %}
             <!-- LOGIN SCREEN -->
             <div class="login-screen" id="login-screen">
-                <!-- unchanged login screen -->
+                <div class="login-card">
+                    <div class="login-icon">🏥</div>
+                    <h2>Welcome to HealthAI</h2>
+                    <p>AI-powered health checkup with multi-agent disease prediction, treatment recommendations, and
+                        downloadable health reports.</p>
+                    <div class="login-features">
+                        <div class="login-feature"><span>🩺</span> 132 Symptom Analysis</div>
+                        <div class="login-feature"><span>🧠</span> ML + AI Diagnosis</div>
+                        <div class="login-feature"><span>💊</span> Treatment Plans</div>
+                        <div class="login-feature"><span>📄</span> PDF Reports</div>
+                    </div>
+                    <a href="/login" class="login-btn" id="login-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                        </svg>
+                        Sign In to Start Checkup
+                    </a>
+                    <p class="login-note">Secure authentication powered by Auth0</p>
+                </div>
             </div>
             {% else %}
 
@@ -116,24 +137,42 @@
                 <div class="results-header">
                     <h2>🩺 Your Health Assessment Report</h2>
                     <div class="results-actions">
-                        <!-- unchanged action buttons -->
+                        <button class="action-btn listen-btn" id="listen-btn" title="Listen to Report (ElevenLabs)">
+                            🔊 Listen
+                        </button>
+                        <button class="action-btn cloud-btn" id="cloud-btn" title="Save to Cloud (DigitalOcean)">
+                            ☁️ Cloud Save
+                        </button>
+                        <button class="action-btn blockchain-btn" id="blockchain-btn"
+                            title="Verify on Blockchain (Solana)">
+                            ⛓️ Verify
+                        </button>
+                        <button class="download-btn" id="download-btn">
+                            📥 Download PDF
+                        </button>
+                        <button class="new-checkup-btn" id="new-checkup-btn">
+                            🔄 New Checkup
+                        </button>
                     </div>
                 </div>
 
                 <!-- Integration Status Feedback -->
                 <div class="integration-feedback hidden" id="integration-feedback"></div>
 
-                <!-- Audio Player -->
+                <!-- Audio Player (ElevenLabs) -->
                 <div class="audio-player hidden" id="audio-player">
                     <audio controls id="report-audio" style="width:100%"></audio>
                 </div>
 
                 <!-- Blockchain Badge -->
                 <div class="blockchain-badge hidden" id="blockchain-badge">
-                    <!-- unchanged blockchain badge -->
+                    <span class="chain-icon">⛓️</span>
+                    <div class="chain-info">
+                        <span class="chain-label">Verified on Solana</span>
+                        <a href="#" target="_blank" id="chain-link" class="chain-tx">View Transaction →</a>
+                    </div>
                 </div>
 
-                <!-- Report Content -->
                 <div class="report-content" id="report-content"></div>
 
                 <!-- 🔑 Added model result placeholders -->
@@ -142,10 +181,14 @@
                     <div id="svm-result"></div>
                 </div>
 
-                <!-- Health Trends -->
+                <!-- Health Trends (Snowflake) -->
                 <div class="health-trends" id="health-trends">
-                    <!-- unchanged trends -->
+                    <h3>📊 Population Health Trends</h3>
+                    <div class="trends-grid" id="trends-grid">Loading analytics...</div>
+                    <div class="trends-source" id="trends-source"></div>
                 </div>
+
+
 
                 <p class="input-disclaimer">HealthAI provides AI-generated health insights. Always consult a qualified
                     doctor for medical advice.</p>

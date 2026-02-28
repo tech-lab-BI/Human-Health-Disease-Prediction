@@ -310,11 +310,18 @@
     "Varicose veins",
     "hepatitis A"
   ],
-  "accuracy": 100.0,
+  "rf_accuracy": 100.0,
+  "svm_accuracy": 100.0,
   "n_training_samples": 4920,
   "n_test_samples": 41,
   "n_symptoms": 132,
   "n_diseases": 41,
-  "model_type": "RandomForestClassifier",
-  "n_estimators": 200
+  "models": {
+    "RandomForestClassifier": {
+      "n_estimators": 200
+    },
+    "SVC": {
+      "kernel": "rbf"
+    }
+  }
 }

@@ -113,7 +113,19 @@ function renderCurrentStep() {
 
 // Step 0: Primary Complaint (free-text — always first)
 function renderComplaintStep(div) {
-    div.innerHTML = `
+    const isLoggedIn = !!document.querySelector('.user-badge');
+
+    let userRecordsHtml = '';
+    if (isLoggedIn) {
+        userRecordsHtml = `
+            <div class="user-records" id="user-records" style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;">📂 My Previous Prescriptions</h3>
+                <div class="records-list" id="records-list" style="max-height: 250px; overflow-y: auto;">Loading records...</div>
+            </div>
+        `;
+    }
+
+    div.innerHTML = userRecordsHtml + `
         <div class="step-title">🩺 What's your primary health concern?</div>
         
         <div class="name-wrap" style="margin-bottom: 24px;">
@@ -129,6 +141,11 @@ function renderComplaintStep(div) {
         </div>
         <div class="complaint-error hidden" id="complaint-error"></div>
     `;
+
+    // Fetch and populate the records if logged in
+    if (isLoggedIn) {
+        setTimeout(loadUserRecords, 100);
+    }
 
     // Auto-clear error on typing name
     const nameIn = div.querySelector('#input-name');
@@ -579,20 +596,19 @@ async function runAnalysis() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
     }).then(r => r.json())
-    .then(data => {
-        // Show ensemble predictions
-        displayDiagnosis(data.diagnosis.top_conditions);
+        .then(data => {
+            // Show ensemble predictions (deleted undefined displayDiagnosis call)
 
-        // 🔑 Optionally show model details
-        if (data.diagnosis.details) {
-            document.getElementById('rf-result').textContent =
-                `Random Forest Model: ${data.diagnosis.details.RandomForest}`;
-            document.getElementById('svm-result').textContent =
-                `SVM Model: ${data.diagnosis.details.SVM}`;
-        }
+            // 🔑 Optionally show model details
+            if (data.diagnosis.details) {
+                document.getElementById('rf-result').textContent =
+                    `Random Forest Model: ${data.diagnosis.details.RandomForest}`;
+                document.getElementById('svm-result').textContent =
+                    `SVM Model: ${data.diagnosis.details.SVM}`;
+            }
 
-        return data; // keep promise chain intact
-    });
+            return data; // keep promise chain intact
+        });
 
 
     await animateStep('astep-2', 'diagnosis', 800);
@@ -930,7 +946,55 @@ function showFeedback(msg, type = 'info') {
 
 
 // ===========================================================================
-// Update showResults to also load trends
+// 📂 Snowflake — My Past Records
+// ===========================================================================
+
+async function loadUserRecords() {
+    const list = document.getElementById('records-list');
+    if (!list) return;
+
+    try {
+        const res = await fetch('/api/my-records');
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.records || data.records.length === 0) {
+            list.innerHTML = '<div class="trend-empty">No past records found.</div>';
+            return;
+        }
+
+        let html = '';
+        for (const r of data.records) {
+            const date = new Date(r.created_at).toLocaleDateString();
+            html += `
+            <div class="record-card" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.2);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--primary); font-weight: 500;">🩺 ${r.predicted_disease}</span>
+                    <span style="color: var(--text-muted); font-size: 0.9em;">${date}</span>
+                </div>
+                <div style="font-size: 0.9em; margin-bottom: 4px;">
+                    <span style="color: var(--text-muted);">Symptom:</span> ${r.complaint}
+                </div>
+                <div style="font-size: 0.85em; display: flex; gap: 10px; color: var(--text-muted);">
+                    <span>Confidence: ${r.confidence}%</span>
+                    <span>${r.age_range}</span>
+                    <span>${r.gender}</span>
+                </div>
+            </div>`;
+        }
+        list.innerHTML = html;
+
+    } catch (e) {
+        console.error("User Records Error:", e);
+        list.innerHTML = '<div class="trend-empty" style="color: var(--danger);">Failed to load records</div>';
+    }
+}
+
+// ===========================================================================
+// Update showResults to also load trends and records
 // ===========================================================================
 
 const _origShowResults = showResults;
