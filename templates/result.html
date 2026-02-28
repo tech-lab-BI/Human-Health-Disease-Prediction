@@ -1,11 +1,78 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+<<<<<<< HEAD
     <title>Prediction Result</title>
+=======
+<<<<<<< HEAD
+    <title>Result - Health Checkup</title>
+=======
+    <title>Prediction Result</title>
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
+>>>>>>> RajSide-Changes
     <link rel="stylesheet" href="../static/style.css">
 </head>
+
 <body>
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+    <h1 class="title">HEALTH CHECKUP</h1>
+
+    <div class="container result-container">
+
+        <!-- Auth Header -->
+        <div class="auth-header">
+            {% if session and session.get('user') %}
+            <span class="welcome-text">👋 {{ session.get('user').get('userinfo').get('name') }}</span>
+            <a href="/logout"><button class="btn-small btn-danger">Logout</button></a>
+            {% else %}
+            <a href="/login"><button class="btn-small btn-primary">Login / Sign Up</button></a>
+            {% endif %}
+        </div>
+
+        <div class="result-box">
+            <h2>There are chances you may have</h2>
+            <h1 class="disease-name">{{ disease }}</h1>
+        </div>
+
+        <!-- Remedies Section -->
+        <div class="remedies-box">
+            {% if session and session.get('user') %}
+            <div class="tier-badge tier-premium">🌟 Premium AI-Powered Remedies</div>
+            <div class="remedies-content">
+                {{ remedies | safe }}
+            </div>
+            <div class="consult-cta">
+                <h3>Want professional help?</h3>
+                <p>Consult with a verified doctor right now.</p>
+                <a href="/consult?disease={{ disease }}">
+                    <button class="btn-pay">🩺 Consult a Doctor</button>
+                </a>
+            </div>
+            {% else %}
+            <div class="tier-badge tier-free">🔓 Basic Tips</div>
+            <div class="remedies-content">
+                <ul>
+                    <li>Stay hydrated and get plenty of rest.</li>
+                    <li>Monitor your symptoms for any changes.</li>
+                    <li>Consider consulting a healthcare professional.</li>
+                </ul>
+                <div class="upgrade-prompt">
+                    <p>🌟 <a href="/login">Login</a> to unlock <strong>AI-powered detailed remedies</strong> and
+                        <strong>doctor consultations</strong>.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="/" class="back-link">← Check Another Disease</a>
+
+    </div>
+=======
+>>>>>>> RajSide-Changes
 <h1 class="title">Prediction Result</h1>
 
 <div class="container">
@@ -17,6 +84,8 @@
         <a href="/"><button>Go Back</button></a>
     </div>
 </div>
+>>>>>>> 9e543d0ae06d1c45145971c0546ce4b006a6a4e9
 
 </body>
+
 </html>

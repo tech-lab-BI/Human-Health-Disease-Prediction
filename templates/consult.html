@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Consult a Doctor - Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+    <h1 class="title">HEALTH CHECKUP</h1>
+    <p class="subtitle">Find the Right Doctor</p>
+
+    <div class="container consult-container">
+
+        <div class="result-summary">
+            <h3>Your Diagnosis: <span class="highlight">{{ disease }}</span></h3>
+            <p class="muted-text">Choose a doctor below to book a consultation</p>
+        </div>
+
+        <div class="doctors-grid">
+            {% for doc in doctors %}
+            <div class="doctor-card">
+                <div class="doctor-card-header">
+                    <h3>{{ doc.name }}</h3>
+                    <span class="badge badge-rating">⭐ {{ doc.rating }}</span>
+                </div>
+                <p class="doctor-spec">{{ doc.specialization }}</p>
+                <p>📍 {{ doc.location }} · {{ doc.experience }}</p>
+                <div class="doctor-card-footer">
+                    <span class="fee">₹{{ doc.fee }}</span>
+                    <a href="/payment?doctor_id={{ doc.id }}&disease={{ disease }}">
+                        <button class="btn-primary">Book Consultation</button>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <a href="/" class="back-link">← Back to Home</a>
+
+    </div>
+
+</body>
+
+</html>

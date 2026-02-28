@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Payment - Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+    <h1 class="title">HEALTH CHECKUP</h1>
+    <p class="subtitle">Consultation Payment</p>
+
+    <div class="container">
+        <div class="payment-box">
+            <h2>💳 Payment Summary</h2>
+
+            <div class="payment-details">
+                <div class="payment-row">
+                    <span>Doctor</span>
+                    <strong>{{ doctor.name }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Specialization</span>
+                    <strong>{{ doctor.specialization }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Disease</span>
+                    <strong>{{ disease }}</strong>
+                </div>
+                <div class="payment-divider"></div>
+                <div class="payment-row">
+                    <span>Consultation Fee</span>
+                    <strong>₹{{ doctor.fee }}</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Platform Fee</span>
+                    <strong>₹49</strong>
+                </div>
+                <div class="payment-divider"></div>
+                <div class="payment-row payment-total">
+                    <span>Total</span>
+                    <strong>₹{{ doctor.fee + 49 }}</strong>
+                </div>
+            </div>
+
+            <form action="/book" method="POST">
+                <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                <input type="hidden" name="disease" value="{{ disease }}">
+                <button type="submit" class="btn-pay">Pay ₹{{ doctor.fee + 49 }} & Book</button>
+            </form>
+
+            <p class="muted-text">🔒 Secure simulated payment for demo purposes</p>
+            <a href="/" class="back-link">← Cancel</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

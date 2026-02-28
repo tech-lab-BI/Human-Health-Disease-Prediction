@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Doctor Dashboard - Health Checkup</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+
+<body>
+
+    <h1 class="title">HEALTH CHECKUP</h1>
+    <p class="subtitle">Doctor Dashboard</p>
+
+    <div class="container dashboard-container">
+
+        <div class="doctor-profile-card">
+            <h2>Welcome, {{ doctor.name }}</h2>
+            <p>{{ doctor.specialization }} · {{ doctor.experience }} experience</p>
+            <p>📍 {{ doctor.location }} · ⭐ {{ doctor.rating }}</p>
+            <a href="/doctor-logout"><button class="btn-danger">Logout</button></a>
+        </div>
+
+        <div class="form-box">
+            <h2>📋 Patient Consultation Requests</h2>
+
+            {% if requests_list %}
+            {% for req in requests_list %}
+            <div class="consultation-card">
+                <div class="consultation-header">
+                    <strong>{{ req.patient_name }}</strong>
+                    <span class="badge badge-{{ req.status }}">{{ req.status }}</span>
+                </div>
+                <p><strong>Disease:</strong> {{ req.disease }}</p>
+                <p><strong>Symptoms:</strong> {{ req.symptoms | join(', ') }}</p>
+                <p class="muted-text">Booked on {{ req.timestamp }}</p>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>🕐 No consultation requests yet.</p>
+                <p class="muted-text">Patient requests will appear here when they book a consultation with you.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</body>
+
+</html>

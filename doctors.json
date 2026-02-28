@@ -1,0 +1,57 @@
+[
+    {
+        "id": 1,
+        "name": "Dr. Priya Sharma",
+        "specialization": "General Physician",
+        "experience": "12 years",
+        "fee": 299,
+        "rating": 4.8,
+        "location": "Mumbai",
+        "password": "doctor123",
+        "email": "priya.sharma@healthcheckup.com"
+    },
+    {
+        "id": 2,
+        "name": "Dr. Rajesh Kumar",
+        "specialization": "Dermatologist",
+        "experience": "8 years",
+        "fee": 399,
+        "rating": 4.6,
+        "location": "Delhi",
+        "password": "doctor123",
+        "email": "rajesh.kumar@healthcheckup.com"
+    },
+    {
+        "id": 3,
+        "name": "Dr. Anita Desai",
+        "specialization": "Orthopedic Specialist",
+        "experience": "15 years",
+        "fee": 499,
+        "rating": 4.9,
+        "location": "Bangalore",
+        "password": "doctor123",
+        "email": "anita.desai@healthcheckup.com"
+    },
+    {
+        "id": 4,
+        "name": "Dr. Suresh Patel",
+        "specialization": "Neurologist",
+        "experience": "10 years",
+        "fee": 599,
+        "rating": 4.7,
+        "location": "Ahmedabad",
+        "password": "doctor123",
+        "email": "suresh.patel@healthcheckup.com"
+    },
+    {
+        "id": 5,
+        "name": "Dr. Meera Iyer",
+        "specialization": "Internal Medicine",
+        "experience": "20 years",
+        "fee": 349,
+        "rating": 4.5,
+        "location": "Chennai",
+        "password": "doctor123",
+        "email": "meera.iyer@healthcheckup.com"
+    }
+]

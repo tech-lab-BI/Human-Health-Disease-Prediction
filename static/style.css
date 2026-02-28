@@ -1,51 +1,514 @@
+/* ===== GLOBAL RESET & BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial;
-    background: linear-gradient(to right, #89CFF0, #6495ED);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    min-height: 100vh;
+    color: #e0e0e0;
     text-align: center;
+    padding-bottom: 40px;
 }
 
+a {
+    color: #64b5f6;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== TITLE ===== */
 .title {
-    color: blue;
-    margin-top: 20px;
+    color: #64b5f6;
+    margin-top: 30px;
+    font-size: 2.2em;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(100, 181, 246, 0.3);
 }
 
+.subtitle {
+    color: #90a4ae;
+    margin-top: 5px;
+    font-size: 0.95em;
+}
+
+/* ===== CONTAINER ===== */
 .container {
-    margin: 50px auto;
-    width: 400px;
+    margin: 30px auto;
+    width: 460px;
+    max-width: 95%;
+}
+
+.result-container, .consult-container, .dashboard-container {
+    width: 600px;
+}
+
+/* ===== AUTH HEADER ===== */
+.auth-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.welcome-text {
+    color: #a5d6a7;
+    font-size: 0.9em;
+}
+
+/* ===== TABS ===== */
+.tabs {
+    display: flex;
+    margin-bottom: 0;
+}
+
+.tabs a {
+    flex: 1;
+    text-decoration: none;
 }
 
 .tabs button {
-    padding: 10px;
+    width: 100%;
+    padding: 12px;
     border: none;
-    width: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #b0bec5;
     cursor: pointer;
+    font-size: 0.95em;
+    transition: all 0.3s;
+}
+
+.tabs button:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .tabs .active {
-    background-color: red;
+    background: linear-gradient(135deg, #e53935, #c62828);
+    color: white;
+    font-weight: bold;
+}
+
+/* ===== FORM BOX ===== */
+.form-box {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 0 0 12px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-box h2 {
+    color: #e0e0e0;
+    margin-bottom: 15px;
+}
+
+.form-box input[type="text"],
+.form-box input[type="email"],
+.form-box input[type="password"] {
+    width: 90%;
+    padding: 10px 14px;
+    margin: 6px 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0e0e0;
+    font-size: 0.95em;
+    transition: border-color 0.3s;
+}
+
+.form-box input:focus {
+    outline: none;
+    border-color: #64b5f6;
+}
+
+/* ===== BUTTONS ===== */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1565c0, #1976d2);
+    color: white;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1976d2, #1e88e5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(25, 118, 210, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #c62828, #e53935);
     color: white;
 }
 
-.form-box {
-    background: #6A8FD8;
-    padding: 20px;
-    border-radius: 10px;
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
 }
 
-.form-box input {
-    width: 90%;
-    padding: 8px;
+.btn-small {
+    padding: 6px 14px;
+    font-size: 0.85em;
+}
+
+.btn-pay {
+    background: linear-gradient(135deg, #2e7d32, #43a047);
+    color: white;
+    padding: 14px 28px;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-pay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
+}
+
+/* ===== TIER BADGES ===== */
+.tier-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
+.tier-premium {
+    background: linear-gradient(135deg, #f9a825, #ff8f00);
+    color: #1a1a1a;
+    font-weight: bold;
+}
+
+.tier-free {
+    background: rgba(255, 255, 255, 0.1);
+    color: #90a4ae;
+}
+
+/* ===== RESULT BOX ===== */
+.result-box {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-box h2 {
+    color: #90a4ae;
+    font-size: 1.1em;
+    font-weight: normal;
+}
+
+.disease-name {
+    color: #ef5350;
+    font-size: 2em;
+    margin-top: 10px;
+    text-shadow: 0 0 20px rgba(239, 83, 80, 0.3);
+}
+
+/* ===== REMEDIES BOX ===== */
+.remedies-box {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    text-align: left;
+}
+
+.remedies-content {
+    line-height: 1.7;
+    color: #cfd8dc;
+}
+
+.remedies-content ul {
+    padding-left: 20px;
+}
+
+.remedies-content li {
+    margin-bottom: 6px;
+}
+
+.remedies-content h3, .remedies-content h4 {
+    color: #64b5f6;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+.remedies-content strong {
+    color: #e0e0e0;
+}
+
+.upgrade-prompt {
+    background: rgba(249, 168, 37, 0.1);
+    border: 1px solid rgba(249, 168, 37, 0.3);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* ===== CONSULT CTA ===== */
+.consult-cta {
+    background: rgba(46, 125, 50, 0.1);
+    border: 1px solid rgba(46, 125, 50, 0.3);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.consult-cta h3 {
+    color: #a5d6a7;
+}
+
+.consult-cta p {
+    color: #90a4ae;
+    margin: 5px 0 10px;
+}
+
+/* ===== DOCTOR CARDS ===== */
+.doctors-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.doctor-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: left;
+    transition: all 0.3s;
+}
+
+.doctor-card:hover {
+    border-color: rgba(100, 181, 246, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.doctor-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.doctor-card-header h3 {
+    color: #e0e0e0;
+}
+
+.doctor-spec {
+    color: #64b5f6;
+    font-size: 0.9em;
+    margin: 4px 0 8px;
+}
+
+.doctor-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fee {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #a5d6a7;
+}
+
+/* ===== BADGES ===== */
+.badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.badge-rating {
+    background: rgba(249, 168, 37, 0.2);
+    color: #f9a825;
+}
+
+.badge-pending {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ffb74d;
+}
+
+.badge-confirmed {
+    background: rgba(76, 175, 80, 0.2);
+    color: #81c784;
+}
+
+/* ===== RESULT SUMMARY ===== */
+.result-summary {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.highlight {
+    color: #ef5350;
+}
+
+/* ===== PAYMENT BOX ===== */
+.payment-box, .confirmation-box {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-details, .confirmation-details {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    color: #b0bec5;
+}
+
+.payment-row strong {
+    color: #e0e0e0;
+}
+
+.payment-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin: 8px 0;
 }
 
-button {
-    padding: 8px 15px;
-    background: darkblue;
-    color: white;
-    border: none;
-    cursor: pointer;
+.payment-total {
+    font-size: 1.15em;
 }
 
-.result-box {
-    margin-top: 100px;
+.payment-total strong {
+    color: #a5d6a7;
+}
+
+/* ===== CONFIRMATION ===== */
+.confirmation-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.confirmation-actions {
+    margin-top: 20px;
+}
+
+/* ===== DOCTOR PROFILE CARD ===== */
+.doctor-profile-card {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.doctor-profile-card h2 {
+    color: #64b5f6;
+}
+
+.doctor-profile-card p {
+    color: #90a4ae;
+    margin: 4px 0;
+}
+
+/* ===== CONSULTATION CARD ===== */
+.consultation-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: left;
+}
+
+.consultation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.consultation-header strong {
+    color: #e0e0e0;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    padding: 30px;
+    color: #78909c;
+}
+
+/* ===== DOCTOR LOGIN BOX ===== */
+.doctor-login-box {
+    border-radius: 12px;
+}
+
+/* ===== DOCTOR PORTAL LINK ===== */
+.doctor-portal-link {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.doctor-portal-link p {
+    color: #90a4ae;
+    margin-bottom: 8px;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error-msg {
+    background: rgba(229, 57, 53, 0.15);
+    border: 1px solid rgba(229, 57, 53, 0.3);
+    color: #ef9a9a;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+/* ===== MUTED TEXT ===== */
+.muted-text {
+    color: #78909c;
+    font-size: 0.85em;
+    margin-top: 10px;
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #64b5f6;
 }
