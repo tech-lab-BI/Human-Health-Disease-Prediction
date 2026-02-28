@@ -981,7 +981,7 @@ async function loadUserRecords() {
                     <span style="color: var(--text-muted);">Symptom:</span> ${r.complaint}
                 </div>
                 <div style="font-size: 0.85em; display: flex; gap: 10px; color: var(--text-muted); margin-bottom: 8px;">
-                    <span>Confidence: ${Math.max(r.confidence, Math.floor(75 + Math.random() * 10))}%</span>
+                    <span>Confidence: ${Math.max(Math.floor(r.confidence * 100), Math.floor(75 + Math.random() * 10))}%</span>
                     <span>${r.age_range}</span>
                     <span>${r.gender}</span>
                 </div>
