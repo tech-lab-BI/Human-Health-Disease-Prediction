@@ -967,22 +967,31 @@ async function loadUserRecords() {
         }
 
         let html = '';
-        for (const r of data.records) {
+        for (const [idx, r] of data.records.entries()) {
             const date = new Date(r.created_at).toLocaleDateString();
+            const reportHtml = r.full_report ? parseMarkdown(r.full_report) : '<em>No detailed report available for this older record.</em>';
+
             html += `
             <div class="record-card" style="border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.2);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;">
                     <span style="color: var(--primary); font-weight: 500;">🩺 ${r.predicted_disease}</span>
                     <span style="color: var(--text-muted); font-size: 0.9em;">${date}</span>
                 </div>
                 <div style="font-size: 0.9em; margin-bottom: 4px;">
                     <span style="color: var(--text-muted);">Symptom:</span> ${r.complaint}
                 </div>
-                <div style="font-size: 0.85em; display: flex; gap: 10px; color: var(--text-muted);">
+                <div style="font-size: 0.85em; display: flex; gap: 10px; color: var(--text-muted); margin-bottom: 8px;">
                     <span>Confidence: ${r.confidence}%</span>
                     <span>${r.age_range}</span>
                     <span>${r.gender}</span>
                 </div>
+                
+                <details style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px; margin-top: 8px;">
+                    <summary style="cursor: pointer; color: var(--text-muted); font-size: 0.85em; user-select: none;">📄 View Full Report</summary>
+                    <div style="margin-top: 12px; font-size: 0.9em; color: var(--text-primary); line-height: 1.5; max-height: 300px; overflow-y: auto; padding-right: 8px;" class="report-content">
+                        ${reportHtml}
+                    </div>
+                </details>
             </div>`;
         }
         list.innerHTML = html;

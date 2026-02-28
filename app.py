@@ -275,7 +275,7 @@ def analyze():
         user_obj = session.get("user", {})
         user_email = user_obj.get("email") or user_obj.get("name") 
         print(f"DEBUG SAVE RECORD: user_obj={user_obj}, user_email={user_email}")
-        store_health_data(patient_data, diagnosis, user_email)
+        store_health_data(patient_data, diagnosis, user_email, report)
 
         sources = []
         if metadata:

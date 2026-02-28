@@ -145,19 +145,24 @@ def _ensure_snowflake_table():
             )
         """)
         try:
-            # Add column if it doesn't already exist (Snowflake specific syntax)
+            # Add columns if they don't already exist (Snowflake specific syntax)
             cur.execute("ALTER TABLE health_checkups ADD COLUMN user_email STRING")
+        except:
+            pass
+        try:
+            cur.execute("ALTER TABLE health_checkups ADD COLUMN full_report STRING")
         except:
             pass
     finally:
         conn.close()
 
 
-def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = None) -> bool:
+def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = None, report: str = None) -> bool:
     """Store anonymized checkup data in Snowflake (or local fallback)."""
     record = {
         "timestamp": datetime.utcnow().isoformat(),
         "user_email": user_email,
+        "full_report": report,
         "age_range": patient_data.get("age", "N/A"),
         "gender": patient_data.get("gender", "N/A"),
         "complaint_category": _categorize_complaint(patient_data.get("complaint", "")),
@@ -187,11 +192,11 @@ def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = Non
                 cur.execute("""
                     INSERT INTO health_checkups (user_email, age_range, gender, complaint, severity,
                         duration, symptoms, predicted_disease, confidence, body_areas,
-                        preexisting, lifestyle)
+                        preexisting, lifestyle, full_report)
                     SELECT 
                         %s, %s, %s, %s, %s, %s, 
                         PARSE_JSON(%s), %s, %s, 
-                        PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s)
+                        PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s), %s
                 """, (
                     str(user_email) if user_email else None, 
                     str(record["age_range"]), 
@@ -205,6 +210,7 @@ def store_health_data(patient_data: dict, diagnosis: dict, user_email: str = Non
                     json.dumps(record["body_areas"]),
                     json.dumps(record["preexisting"]),
                     json.dumps(patient_data.get("lifestyle", {})),
+                    str(record["full_report"]) if record["full_report"] else None,
                 ))
             finally:
                 conn.commit()
@@ -312,7 +318,7 @@ def get_user_records(user_email: str) -> list:
                 cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
                 
                 cur.execute("""
-                    SELECT created_at, predicted_disease, confidence, complaint, age_range, gender
+                    SELECT created_at, predicted_disease, confidence, complaint, age_range, gender, full_report
                     FROM health_checkups
                     WHERE user_email = %s
                     ORDER BY created_at DESC
@@ -327,7 +333,8 @@ def get_user_records(user_email: str) -> list:
                         "confidence": r[2],
                         "complaint": r[3],
                         "age_range": r[4],
-                        "gender": r[5]
+                        "gender": r[5],
+                        "full_report": r[6]
                     })
                 return records
             finally:
