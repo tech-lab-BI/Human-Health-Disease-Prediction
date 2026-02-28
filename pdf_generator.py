@@ -50,6 +50,7 @@ def generate_pdf_report(patient_data: dict, diagnosis: dict, recommendations: di
 
     # Patient Summary
     pdf.section_title("Patient Summary")
+    pdf.body_text(f"Patient Name: {patient_data.get('name', 'Not Provided')}")
     pdf.body_text(f"Age: {patient_data.get('age', 'N/A')}  |  Gender: {patient_data.get('gender', 'N/A')}")
     pdf.body_text(f"Primary Complaint: {patient_data.get('complaint', 'N/A')}")
     if patient_data.get("duration"):
@@ -76,7 +77,7 @@ def generate_pdf_report(patient_data: dict, diagnosis: dict, recommendations: di
     pdf.ln(2)
 
     # Recommendations
-    pdf.section_title("Recommended Treatments")
+    pdf.section_title("You Can Use These Medicines & Treatments")
     for rec in recommendations.get("recommendations", []):
         pdf.set_font("Helvetica", "B", 11)
         pdf.set_text_color(56, 189, 248)
@@ -85,7 +86,7 @@ def generate_pdf_report(patient_data: dict, diagnosis: dict, recommendations: di
         pdf.set_font("Helvetica", "B", 10)
         pdf.set_text_color(50, 50, 50)
 
-        pdf.cell(0, 6, "Medicines:", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 6, "You can use these medicines:", new_x="LMARGIN", new_y="NEXT")
         for m in rec.get("medicines", []):
             pdf.bullet(m)
 
@@ -101,7 +102,7 @@ def generate_pdf_report(patient_data: dict, diagnosis: dict, recommendations: di
         for lc in rec.get("lifestyle_changes", []):
             pdf.bullet(lc)
 
-        pdf.body_text(f"Recommended Specialist: {rec.get('specialist', 'General Physician')}")
+        pdf.body_text(f"Appropriate Specialist: {rec.get('specialist', 'General Physician')}")
         pdf.ln(2)
 
     # Warning

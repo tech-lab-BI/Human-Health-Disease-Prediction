@@ -26,7 +26,7 @@ SUMMARY_SYSTEM_PROMPT = """You are SummaryAgent. Compile a patient-friendly heal
 ### Patient Summary
 ### Symptoms Identified
 ### Possible Conditions (use a table)
-### Recommended Treatments
+### You Can Use These Medicines & Treatments
 ### Important Warnings
 ### Next Steps
 ### Disclaimer
@@ -99,6 +99,7 @@ def generate_local_report(patient_data: dict, diagnosis: dict, recommendations: 
     """Generate a markdown health report without Gemini."""
     r = "## Health Assessment Report\n\n"
     r += "### Patient Summary\n"
+    r += f"**Patient Name:** {patient_data.get('name', 'Not Provided')}\n"
     r += f"**Age:** {patient_data.get('age', 'N/A')} | **Gender:** {patient_data.get('gender', 'N/A')}\n"
     r += f"**Primary Complaint:** {patient_data.get('complaint', 'N/A')}\n\n"
 
@@ -110,19 +111,19 @@ def generate_local_report(patient_data: dict, diagnosis: dict, recommendations: 
     for c in diagnosis.get("top_conditions", []):
         r += f"| **{c['name']}** | {c['confidence']} | {c.get('confidence_score', 'N/A')}% |\n"
 
-    r += "\n### Recommended Treatments\n\n"
+    r += "\n### You Can Use These Medicines & Treatments\n\n"
     for rec in recommendations.get("recommendations", []):
         r += f"#### {rec['condition']}\n"
-        r += "**Medicines:** " + ", ".join(rec.get("medicines", [])) + "\n"
+        r += "**You can use these medicines:** " + ", ".join(rec.get("medicines", [])) + "\n"
         r += "**Home Remedies:** " + ", ".join(rec.get("home_remedies", [])) + "\n"
         r += "**Dietary Advice:** " + ", ".join(rec.get("dietary_advice", [])) + "\n"
         r += "**Lifestyle:** " + ", ".join(rec.get("lifestyle_changes", [])) + "\n"
-        r += f"**Specialist:** {rec.get('specialist', 'General Physician')}\n\n---\n\n"
+        r += f"**Appropriate Specialist:** {rec.get('specialist', 'General Physician')}\n\n---\n\n"
 
     warn = recommendations.get("urgent_warning")
     r += "### Important Warnings\n"
     r += f"**{warn}**\n\n" if warn else "No urgent warnings. Seek help if symptoms worsen.\n\n"
-    r += "### Next Steps\n1. Consult the recommended specialist\n2. Get relevant lab tests\n3. Follow up in 1-2 weeks\n\n"
+    r += "### Next Steps\n1. Consult the appropriate specialist\n2. Get relevant lab tests\n3. Follow up in 1-2 weeks\n\n"
     r += "### Disclaimer\n> AI-generated. Not a substitute for professional medical advice.\n\n"
     acc = metadata.get("accuracy", "N/A") if metadata else "N/A"
     r += f"*Powered by HealthAI ML Model ({acc}% accuracy)*\n"

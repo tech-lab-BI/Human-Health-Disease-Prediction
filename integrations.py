@@ -108,21 +108,25 @@ _local_analytics = []
 def _get_snowflake_conn():
     """Create a Snowflake connection."""
     import snowflake.connector
+    # Connect without forcing an initial database, in case it doesn't exist yet
     return snowflake.connector.connect(
         account=SNOWFLAKE_ACCOUNT,
         user=SNOWFLAKE_USER,
         password=SNOWFLAKE_PASSWORD,
         warehouse=SNOWFLAKE_WAREHOUSE,
-        database=SNOWFLAKE_DATABASE,
-        schema=SNOWFLAKE_SCHEMA,
     )
 
 
 def _ensure_snowflake_table():
-    """Create the health_checkups table if it doesn't exist."""
+    """Create the database, schema, and health_checkups table if they don't exist."""
     conn = _get_snowflake_conn()
     try:
-        conn.cursor().execute("""
+        cur = conn.cursor()
+        cur.execute(f"CREATE DATABASE IF NOT EXISTS {SNOWFLAKE_DATABASE}")
+        cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
+        cur.execute(f"CREATE SCHEMA IF NOT EXISTS {SNOWFLAKE_SCHEMA}")
+        cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS health_checkups (
                 id STRING DEFAULT UUID_STRING(),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP(),
@@ -170,12 +174,15 @@ def store_health_data(patient_data: dict, diagnosis: dict) -> bool:
             _ensure_snowflake_table()
             conn = _get_snowflake_conn()
             try:
-                conn.cursor().execute("""
+                cur = conn.cursor()
+                cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
+                cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
+                cur.execute("""
                     INSERT INTO health_checkups (age_range, gender, complaint, severity,
                         duration, symptoms, predicted_disease, confidence, body_areas,
                         preexisting, lifestyle)
-                    VALUES (%s, %s, %s, %s, %s, PARSE_JSON(%s), %s, %s,
-                        PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s))
+                    SELECT %s, %s, %s, %s, %s, PARSE_JSON(%s), %s, %s,
+                        PARSE_JSON(%s), PARSE_JSON(%s), PARSE_JSON(%s)
                 """, (
                     record["age_range"], record["gender"],
                     record["complaint_category"], record["severity"],
@@ -200,21 +207,25 @@ def get_health_stats() -> dict:
     """Get aggregate health statistics from Snowflake or local data."""
     if SNOWFLAKE_AVAILABLE:
         try:
+            _ensure_snowflake_table()
             conn = _get_snowflake_conn()
             try:
                 cur = conn.cursor()
+                cur.execute(f"USE DATABASE {SNOWFLAKE_DATABASE}")
+                cur.execute(f"USE SCHEMA {SNOWFLAKE_SCHEMA}")
                 stats = {}
 
-                cur.execute("SELECT predicted_disease, COUNT(*) as cnt FROM health_checkups GROUP BY predicted_disease ORDER BY cnt DESC LIMIT 5")
+                # Filter out null or empty diseases
+                cur.execute("SELECT predicted_disease, COUNT(*) as cnt FROM health_checkups WHERE predicted_disease IS NOT NULL AND predicted_disease != '' GROUP BY predicted_disease ORDER BY cnt DESC LIMIT 5")
                 stats["top_diseases"] = [{"disease": r[0], "count": r[1]} for r in cur.fetchall()]
 
-                cur.execute("SELECT age_range, COUNT(*) as cnt FROM health_checkups GROUP BY age_range ORDER BY cnt DESC")
+                cur.execute("SELECT age_range, COUNT(*) as cnt FROM health_checkups WHERE age_range IS NOT NULL AND age_range != 'N/A' GROUP BY age_range ORDER BY cnt DESC")
                 stats["by_age"] = [{"age": r[0], "count": r[1]} for r in cur.fetchall()]
 
                 cur.execute("SELECT COUNT(*) FROM health_checkups")
                 stats["total_checkups"] = cur.fetchone()[0]
 
-                cur.execute("SELECT COUNT(DISTINCT predicted_disease) FROM health_checkups")
+                cur.execute("SELECT COUNT(DISTINCT predicted_disease) FROM health_checkups WHERE predicted_disease IS NOT NULL AND predicted_disease != ''")
                 stats["unique_diseases"] = cur.fetchone()[0]
 
                 return {"source": "snowflake", **stats}

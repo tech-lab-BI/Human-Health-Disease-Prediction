@@ -105,6 +105,13 @@ function renderCurrentStep() {
 function renderComplaintStep(div) {
     div.innerHTML = `
         <div class="step-title">🩺 What's your primary health concern?</div>
+        
+        <div class="name-wrap" style="margin-bottom: 24px;">
+            <label style="display:block; font-size: 0.95rem; margin-bottom: 8px; font-weight: 500; color: var(--text-primary);">What is your name?</label>
+            <input type="text" class="step-textarea" id="input-name" placeholder="e.g. John Doe" value="${formData.name || ''}" style="min-height: 48px; border-radius: var(--radius-sm); padding: 12px; background: var(--bg-primary); border: 1px solid var(--border); color: var(--text-primary); width: 100%; box-sizing: border-box; font-family: inherit; font-size: 1rem;" />
+            <div class="complaint-error hidden" id="name-error" style="margin-top: 6px;"></div>
+        </div>
+
         <div class="step-subtitle">Describe your main symptoms or health complaint in your own words, or use the mic button to speak. Our AI will generate tailored follow-up questions.</div>
         <div class="textarea-wrap">
             <textarea class="step-textarea" id="input-complaint" placeholder="e.g. I've been having a persistent cough and fever for the past 3 days, along with body aches...">${formData.complaint || ''}</textarea>
@@ -112,6 +119,15 @@ function renderComplaintStep(div) {
         </div>
         <div class="complaint-error hidden" id="complaint-error"></div>
     `;
+
+    // Auto-clear error on typing name
+    const nameIn = div.querySelector('#input-name');
+    if (nameIn) {
+        nameIn.addEventListener('input', () => {
+            const err = document.getElementById('name-error');
+            if (err) { err.classList.add('hidden'); err.textContent = ''; }
+        });
+    }
     // Auto-clear error on typing
     const ta = div.querySelector('#input-complaint');
     if (ta) {
@@ -365,6 +381,8 @@ function bindLifestyleChips(container) {
 
 function saveCurrentStep() {
     if (currentStep === 0) {
+        const nameIn = document.getElementById('input-name');
+        if (nameIn) formData.name = nameIn.value.trim();
         const ta = document.getElementById('input-complaint');
         if (ta) formData.complaint = ta.value.trim();
         return;
@@ -411,7 +429,26 @@ function saveCurrentStep() {
 
 function validateCurrentStep() {
     if (currentStep === 0) {
-        return !!(formData.complaint && formData.complaint.length >= 5);
+        let valid = true;
+        if (!formData.name || formData.name.length < 2) {
+            const err = document.getElementById('name-error');
+            if (err) { err.textContent = 'Please enter your name.'; err.classList.remove('hidden'); }
+
+            const nameIn = document.getElementById('input-name');
+            if (nameIn) {
+                nameIn.style.animation = 'none';
+                nameIn.offsetHeight;
+                nameIn.style.animation = 'shake 0.5s';
+                nameIn.style.borderColor = 'var(--danger)';
+                setTimeout(() => { nameIn.style.borderColor = 'var(--border)'; }, 2000);
+            }
+            valid = false;
+        }
+        if (!formData.complaint || formData.complaint.length < 5) {
+            showComplaintError("Please describe your symptoms more thoroughly.");
+            valid = false;
+        }
+        return valid;
     }
     const config = dynamicSteps[currentStep - 1];
     if (!config) return true;
@@ -845,6 +882,7 @@ async function loadHealthTrends() {
         grid.innerHTML = html;
         source.textContent = `Data source: ${data.source === 'snowflake' ? '❄️ Snowflake' : '💾 Local'}`;
     } catch (e) {
+        console.error("Health Stats Error:", e);
         grid.innerHTML = '<div class="trend-empty">Analytics unavailable</div>';
     }
 }

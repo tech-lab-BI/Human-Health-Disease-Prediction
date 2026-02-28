@@ -235,6 +235,7 @@ def analyze():
                 all_symptoms.append(sym)
 
     patient_data = {
+        "name": data.get("name", "Not Provided"),
         "complaint": complaint,
         "age": data.get("age", "N/A"),
         "gender": data.get("gender", "N/A"),
