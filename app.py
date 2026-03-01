@@ -273,8 +273,7 @@ def analyze():
 
         # Store anonymized data for analytics and user records (Snowflake or local)
         user_obj = session.get("user", {})
-        user_email = user_obj.get("email") or user_obj.get("name") 
-        print(f"DEBUG SAVE RECORD: user_obj={user_obj}, user_email={user_email}")
+        user_email = user_obj.get("email") or user_obj.get("name")
         store_health_data(patient_data, diagnosis, user_email, report)
 
         sources = []
@@ -291,10 +290,9 @@ def analyze():
             "gemini_used": bool(gemini_diag),
         })
     except Exception as e:
-        print(f"CRITICAL ERROR IN ANALYZE PIEPELINE: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        import logging
+        logging.error(f"Error in analysis pipeline: {e}", exc_info=True)
+        return jsonify({"error": "Analysis error. Please try again."}), 500
 
 
 @app.route("/api/download-report")
@@ -352,7 +350,6 @@ def api_my_records():
     """Get past health checkup records for the logged-in user."""
     user_obj = session.get("user", {})
     user_email = user_obj.get("email") or user_obj.get("name")
-    print(f"DEBUG FETCH RECORDS: user_obj={user_obj}, user_email={user_email}")
     if not user_email:
         return jsonify({"error": "User email not found"}), 400
     
@@ -403,4 +400,7 @@ def api_blockchain_verify():
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    import os
+    debug_mode = os.getenv("FLASK_DEBUG", "False").lower() == "true"
+    port = int(os.getenv("PORT", 5000))
+    app.run(debug=debug_mode, port=port, host="0.0.0.0")

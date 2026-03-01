@@ -12,7 +12,9 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 # Flask Config
 # ---------------------------------------------------------------------------
-FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "health-chatbot-secret-key")
+FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
+if not FLASK_SECRET_KEY:
+    raise ValueError("FLASK_SECRET_KEY must be set in .env for production")
 
 # ---------------------------------------------------------------------------
 # Auth0 Config
