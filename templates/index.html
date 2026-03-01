@@ -34,11 +34,7 @@
                     <span class="status-dot" id="status-dot"></span>
                     <span class="status-text" id="status-text">Checking...</span>
                 </div>
-                <!-- 🔑 Added accuracy placeholders -->
-                <div class="model-accuracy">
-                    <div id="rf-accuracy"></div>
-                    <div id="svm-accuracy"></div>
-                </div>
+
                 {% if user %}
                 <div class="user-badge">
                     <span class="user-avatar">{{ user.get('name', user.get('email', '?'))[0] | upper }}</span>
@@ -175,11 +171,7 @@
 
                 <div class="report-content" id="report-content"></div>
 
-                <!-- 🔑 Added model result placeholders -->
-                <div class="model-results">
-                    <div id="rf-result"></div>
-                    <div id="svm-result"></div>
-                </div>
+
 
                 <!-- Health Trends (Snowflake) -->
                 <div class="health-trends" id="health-trends">

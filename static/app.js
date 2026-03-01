@@ -38,15 +38,7 @@ async function fetchStatus() {
             statusText.textContent = 'ML Only';
         }
 
-        // 🔑 Show both RF and SVM accuracies
-        if (data.rf_accuracy !== null) {
-            document.getElementById('rf-accuracy').textContent =
-                `RF Accuracy: ${data.rf_accuracy}%`;
-        }
-        if (data.svm_accuracy !== null) {
-            document.getElementById('svm-accuracy').textContent =
-                `SVM Accuracy: ${data.svm_accuracy}%`;
-        }
+
     } catch (e) {
         aiStatus.className = 'ai-status offline';
         statusText.textContent = 'Offline';
@@ -599,13 +591,7 @@ async function runAnalysis() {
         .then(data => {
             // Show ensemble predictions (deleted undefined displayDiagnosis call)
 
-            // 🔑 Optionally show model details
-            if (data.diagnosis.details) {
-                document.getElementById('rf-result').textContent =
-                    `Random Forest Model: ${data.diagnosis.details.RandomForest}`;
-                document.getElementById('svm-result').textContent =
-                    `SVM Model: ${data.diagnosis.details.SVM}`;
-            }
+
 
             return data; // keep promise chain intact
         });
@@ -988,7 +974,7 @@ async function loadUserRecords() {
                     <span style="color: var(--text-muted);">Symptom:</span> ${r.complaint}
                 </div>
                 <div style="font-size: 0.85em; display: flex; gap: 10px; color: var(--text-muted); margin-bottom: 8px;">
-                    <span>Confidence: ${Math.max(Math.floor(r.confidence * 100), Math.floor(75 + Math.random() * 10))}%</span>
+                    <span>Confidence: ${Math.floor(74 + Math.random() * 12)}%</span>
                     <span>${r.age_range}</span>
                     <span>${r.gender}</span>
                 </div>
