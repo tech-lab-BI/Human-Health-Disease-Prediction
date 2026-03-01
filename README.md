@@ -1,268 +1,42 @@
-# Human-Health-Disease-Prediction
-
-Listed-Disease
-itching
-
-skin_rash
-
-nodal_skin_eruptions
-
-continuous_sneezing
-
-shivering
-
-chills
-
-joint_pain
-
-stomach_pain
-
-acidity
-
-ulcers_on_tongue
-
-muscle_wasting
-
-vomiting
-
-burning_micturition
-
-spotting_urination
-
-fatigue
-
-weight_gain
-
-anxiety
-
-cold_hands_and_feets
-
-mood_swings
-
-weight_loss
-
-restlessness
-
-lethargy
-
-patches_in_throat
-
-irregular_sugar_level
-
-cough
-
-high_fever
-
-sunken_eyes
-
-breathlessness
-
-sweating
-
-dehydration
-
-indigestion
-
-headache
-
-yellowish_skin
-
-dark_urine
-
-nausea
-
-loss_of_appetite
-
-pain_behind_the_eyes
-
-back_pain
-
-constipation
-
-abdominal_pain
-
-diarrhoea
-
-mild_fever
-
-yellow_urine
-
-yellowing_of_eyes
-
-acute_liver_failure
-
-fluid_overload
-
-swelling_of_stomach
-
-swelled_lymph_nodes
-
-malaise
-
-blurred_and_distorted_vision
-
-phlegm
-
-throat_irritation
-
-redness_of_eyes
-
-sinus_pressure
-
-runny_nose
-
-congestion
-
-chest_pain
-
-weakness_in_limbs
-
-fast_heart_rate
-
-pain_during_bowel_movements
-
-pain_in_anal_region
-
-bloody_stool
-
-irritation_in_anus
-
-neck_pain
-
-dizziness
-
-cramps
-
-bruising
-
-obesity
-
-swollen_legs
-
-swollen_blood_vessels
-
-puffy_face_and_eyes
-
-enlarged_thyroid
-
-brittle_nails
-
-swollen_extremeties
-
-excessive_hunger
-
-extra_marital_contacts
-
-drying_and_tingling_lips
-
-slurred_speech
-
-knee_pain
-
-hip_joint_pain
-
-muscle_weakness
-
-stiff_neck
-
-swelling_joints
-
-movement_stiffness
-
-spinning_movements
-
-loss_of_balance
-
-unsteadiness
-
-weakness_of_one_body_side
-
-loss_of_smell
-
-bladder_discomfort
-
-foul_smell_of_urine
-
-continuous_feel_of_urine
-
-passage_of_gases
-
-internal_itching
-
-toxic_look_(typhos)
-
-depression
-
-irritability
-
-muscle_pain
-
-altered_sensorium
-
-red_spots_over_body
-
-belly_pain
-
-abnormal_menstruation
-
-dischromic_patches
-
-watering_from_eyes
-
-increased_appetite
-
-polyuria
-
-family_history
-
-mucoid_sputum
-
-rusty_sputum
-
-lack_of_concentration
-
-visual_disturbances
-
-receiving_blood_transfusion
-
-receiving_unsterile_injections
-
-coma
-
-stomach_bleeding
-
-distention_of_abdomen
-
-history_of_alcohol_consumption
-
-fluid_overload
-
-blood_in_sputum
-
-prominent_veins_on_calf
-
-palpitations
-
-painful_walking
-
-pus_filled_pimples
-
-blackheads
-
-scurring
-
-skin_peeling
-
-silver_like_dusting
-
-small_dents_in_nails
-
-inflammatory_nails
-
-blister
-
-red_sore_around_nose
-
-yellow_crust_ooze
-
-prognosis
+# HealthAI: Human-Health-Disease-Prediction
+
+**HealthAI** is a machine learning–based healthcare system developed by **Team Tech99 (3 members)** for the **Diversion2k26 Hackathon**. The project is designed to enable early detection of potential diseases by analyzing user-provided symptoms, providing data-driven insights to help users make smarter health decisions.
+
+## 🚀 Overview
+The system utilizes machine learning algorithms to map a wide array of physical symptoms to potential medical conditions. By offering an accessible way to screen for health issues, it aims to facilitate proactive healthcare management and smarter health analysis.
+
+## ✨ Key Features
+*   **Symptom-Based Prediction:** Predicts potential diseases based on a comprehensive list of user-input symptoms.
+*   **Machine Learning Engine:** Utilizes specialized scripts (`ml_engine.py` and `model_trainer.py`) to process data and generate accurate predictions.
+*   **PDF Report Generation:** Includes functionality to generate reports for users (`pdf_generator.py`).
+*   **Health Recommendations:** Provides actionable health insights and recommendations (`recommendations.py`).
+*   **Web Interface:** A user-friendly interface built with Python and web technologies.
+
+## 🛠️ Tech Stack
+*   **Backend:** Python (98.8%)
+*   **Frontend:** HTML, CSS, and JavaScript
+*   **Automation/Scripts:** PowerShell and Batchfile
+*   **Core Logic:** Machine learning integration for health analysis
+
+## 📂 Project Structure
+The repository is organized as follows:
+*   `/datasets`: Contains data used for training and testing models.
+*   `/models`: Stores trained machine learning models.
+*   `/static` & `/templates`: Assets and HTML files for the web interface.
+*   `app.py`: The main entry point for the application.
+*   `ml_engine.py`: Core machine learning prediction logic.
+*   `recommendations.py`: Logic for providing health advice.
+*   `pdf_generator.py`: Tool for generating health summary reports.
+*   `agents.py` & `integrations.py`: Handles external interactions and specialized tasks.
+*   `seed_db.py`: Script for initializing or seeding the project database.
+
+## 📋 Supported Symptoms
+The system can analyze a vast range of symptoms, including but not limited to:
+*   **General:** Fatigue, high_fever, weight_loss, restlessness, and lethargy.
+*   **Skin-related:** Itching, skin_rash, nodal_skin_eruptions, and yellow_crust_ooze.
+*   **Digestive:** Stomach_pain, acidity, vomiting, indigestion, and constipation.
+*   **Neurological:** Headache, dizziness, altered_sensorium, and slurred_speech.
+*   **Respiratory:** Continuous_sneezing, cough, breathlessness, and phlegm.
+
+## 👥 Contributors
+Developed with ❤️ by **Team Tech99** (3 members) for the **Diversion2k26 Hackathon**.
